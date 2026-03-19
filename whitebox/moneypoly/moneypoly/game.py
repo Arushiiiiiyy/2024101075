@@ -1,3 +1,4 @@
+"""Includes the main logic and states of the game"""
 import os
 
 from moneypoly.config import (
@@ -466,4 +467,3 @@ class Game:
             f"  Cash to receive from {partner.name}: $", default=0
         )
         self.trade(player, partner, chosen_prop, cash)
-        
