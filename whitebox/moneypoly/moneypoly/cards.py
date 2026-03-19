@@ -1,7 +1,9 @@
 import random
 
 CHANCE_CARDS = [
-    {"description": "Advance to Go. Collect $200.",                          "action": "move_to",  "value": 0},
+    {"description": "Advance to Go. Collect $200.",                          
+     "action": "move_to",  
+     "value": 0},
     {"description": "Bank pays you a dividend of $50.",                      "action": "collect",  "value": 50},
     {"description": "Go to Jail. Go directly to Jail.",                      "action": "jail",     "value": 0},
     {"description": "Pay a poor tax of $15.",                                "action": "pay",      "value": 15},
