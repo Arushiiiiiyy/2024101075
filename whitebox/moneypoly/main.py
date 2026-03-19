@@ -1,7 +1,7 @@
 """Main module for the game, entry point ."""
 from moneypoly.game import Game
 
-
+"""Gets all players name"""
 def get_player_names():
     print("Enter player names separated by commas (minimum 2 players):")
     raw = input("> ").strip()
