@@ -62,7 +62,7 @@ class Property:
         owner_name = self.owner.name if self.owner else "unowned"
         return f"Property({self.name!r}, pos={self.position}, owner={owner_name!r})"
 
-
+"""Defines a property along with owners"""
 class PropertyGroup:
     def __init__(self, name, color):
         self.name = name
