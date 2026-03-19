@@ -1,5 +1,5 @@
 """Includes the main logic and states of the game"""
-import os
+#import os
 
 from moneypoly.config import (
     GO_TO_JAIL_POSITION,
