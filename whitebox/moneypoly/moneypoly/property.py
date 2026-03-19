@@ -1,3 +1,4 @@
+"""Handles property logic - buying , mortage, selling etc .."""
 class Property:
     """Represents a single purchasable property tile on the MoneyPoly board."""
 
