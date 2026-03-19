@@ -1,4 +1,5 @@
 """Handles property logic - buying , mortage, selling etc .."""
+# pylint: disable=too-many-instance-attributes
 class Property:
     """Represents a single purchasable property tile on the MoneyPoly board."""
 
