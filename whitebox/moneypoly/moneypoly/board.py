@@ -1,3 +1,4 @@
+"""This file defines structure of the board, defining special tiles, colors etc"""
 from moneypoly.property import Property, PropertyGroup
 from moneypoly.config import (
     JAIL_POSITION,
