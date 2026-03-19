@@ -1,3 +1,4 @@
+"""Main module for the game, entry point ."""
 from moneypoly.game import Game
 
 
