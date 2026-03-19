@@ -8,7 +8,7 @@ def get_player_names():
     names = [n.strip() for n in raw.split(",") if n.strip()]
     return names
 
-
+"""Main entry point function"""
 def main():
     names = get_player_names()
     try:
