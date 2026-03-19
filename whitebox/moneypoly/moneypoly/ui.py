@@ -1,3 +1,4 @@
+"""This function helps in handling the UI and display functions"""
 def print_banner(title):
     """Print a decorated section header."""
     width = 52
