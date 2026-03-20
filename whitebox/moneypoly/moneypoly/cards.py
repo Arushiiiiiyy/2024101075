@@ -40,7 +40,9 @@ CHANCE_CARDS = [
 ]
 
 COMMUNITY_CHEST_CARDS = [
-    {"description": "Bank error in your favour. Collect $200.",              "action": "collect",  "value": 200},
+    {"description": "Bank error in your favour. Collect $200.",              
+     "action": "collect",  
+     "value": 200},
     {"description": "Doctor's fees. Pay $50.",                               "action": "pay",      "value": 50},
     {"description": "From sale of stock you get $50.",                       "action": "collect",  "value": 50},
     {"description": "Go to Jail.",                                           "action": "jail",     "value": 0},
