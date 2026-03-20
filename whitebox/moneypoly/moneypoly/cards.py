@@ -34,7 +34,9 @@ CHANCE_CARDS = [
     {"description": "You are assessed for street repairs. Pay $40.",         
      "action": "pay",      
      "value": 40},
-    {"description": "Collect $50 from every other player.",                  "action": "collect_from_all", "value": 50},
+    {"description": "Collect $50 from every other player.",                  
+     "action": "collect_from_all", 
+     "value": 50},
 ]
 
 COMMUNITY_CHEST_CARDS = [
