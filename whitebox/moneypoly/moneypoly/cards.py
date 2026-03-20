@@ -28,7 +28,9 @@ CHANCE_CARDS = [
     {"description": "Get Out of Jail Free. Keep until needed.",              
      "action": "jail_free",
      "value": 0},
-    {"description": "Speeding fine — pay $15.",                              "action": "pay",      "value": 15},
+    {"description": "Speeding fine — pay $15.",                              
+     "action": "pay",      
+     "value": 15},
     {"description": "You are assessed for street repairs. Pay $40.",         "action": "pay",      "value": 40},
     {"description": "Collect $50 from every other player.",                  "action": "collect_from_all", "value": 50},
 ]
