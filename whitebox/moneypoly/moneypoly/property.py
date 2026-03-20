@@ -1,14 +1,24 @@
 """Handles property logic - buying , mortage, selling etc .."""
+
+from dataclasses import dataclass
+
+@dataclass
+class PropertyConfig:
+    """Bundles the financial parameters of a property."""
+    price: int
+    base_rent: int
+
+
 class Property:
     """Represents a single purchasable property tile on the MoneyPoly board."""
 
     FULL_GROUP_MULTIPLIER = 2
 
-    def __init__(self, name, position, price, base_rent, group=None):
+    def __init__(self, name, position, config: PropertyConfig, group=None):
         self.name = name
         self.position = position
-        self.price = price
-        self.base_rent = base_rent
+        self.price = config.price
+        self.base_rent = config.base_rent
         #self.mortgage_value = price // 2
         self.owner = None
         self.is_mortgaged = False
@@ -68,8 +78,9 @@ class Property:
         owner_name = self.owner.name if self.owner else "unowned"
         return f"Property({self.name!r}, pos={self.position}, owner={owner_name!r})"
 
-"""Defines a property along with owners of that property"""
+
 class PropertyGroup:
+    """Defines a property along with owners of that property"""
     def __init__(self, name, color):
         self.name = name
         self.color = color
