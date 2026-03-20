@@ -1,3 +1,4 @@
+"""Describes all cards and the logic behind them"""
 import random
 
 CHANCE_CARDS = [
