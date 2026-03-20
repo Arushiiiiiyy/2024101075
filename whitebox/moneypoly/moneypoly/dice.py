@@ -1,3 +1,4 @@
+"""Logic of die lies here :) """
 import random
 from moneypoly.config import BOARD_SIZE
 
