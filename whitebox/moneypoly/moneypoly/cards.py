@@ -67,7 +67,9 @@ COMMUNITY_CHEST_CARDS = [
     {"description": "Pay hospital fees of $100.",                            
      "action": "pay",      
      "value": 100},
-    {"description": "Pay school fees of $50.",                               "action": "pay",      "value": 50},
+    {"description": "Pay school fees of $50.",                               
+     "action": "pay",      
+     "value": 50},
     {"description": "Receive $25 consultancy fee.",                          "action": "collect",  "value": 25},
     {"description": "Get Out of Jail Free.",                                 "action": "jail_free","value": 0},
 ]
