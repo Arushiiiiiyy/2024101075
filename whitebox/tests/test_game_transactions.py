@@ -42,3 +42,26 @@ def test_pay_rent_transfers_money_to_owner_and_skips_mortgaged_property():
     game.pay_rent(tenant, prop)
     assert tenant.balance == 100
     assert owner.balance == 200
+
+
+def test_mortgage_and_unmortgage_cover_owner_and_affordability_branches():
+    """Mortgage helpers should enforce ownership and keep state when redemption fails."""
+    game = Game(["A", "B"])
+    owner, other = game.players
+    prop = game.board.get_property_at(1)
+    prop.owner = owner
+    owner.add_property(prop)
+
+    assert game.mortgage_property(other, prop) is False
+    assert game.mortgage_property(owner, prop) is True
+    assert prop.is_mortgaged is True
+    assert game.mortgage_property(owner, prop) is False
+
+    owner.balance = 0
+    assert game.unmortgage_property(owner, prop) is False
+    assert prop.is_mortgaged is True
+
+    owner.balance = int(prop.mortgage_value * 1.1)
+    assert game.unmortgage_property(owner, prop) is True
+    assert prop.is_mortgaged is False
+    assert game.unmortgage_property(owner, prop) is False
