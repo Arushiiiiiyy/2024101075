@@ -21,3 +21,15 @@ def test_bank_payout_and_loan_paths_update_funds():
 
     assert player.balance == STARTING_BALANCE + 100
     assert bank.get_balance() == starting_funds - 100
+
+def test_bank_collect_summary_and_repr(capsys):
+    """Bank bookkeeping helpers should report totals and reserve values correctly."""
+    bank = Bank()
+    bank.collect(200)
+    bank.summary()
+    output = capsys.readouterr().out
+
+    assert "Total collected" in output
+    assert bank.loan_count() == 0
+    assert bank.total_loans_issued() == 0
+    assert "Bank(funds=" in repr(bank)
