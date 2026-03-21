@@ -64,3 +64,13 @@ def test_player_move_awards_salary_when_passing_go():
 
     assert new_position == 1
     assert player.balance == STARTING_BALANCE + GO_SALARY
+
+def test_dice_roll_tracks_doubles_and_uses_full_six_sided_range():
+    """Dice should accept a roll of six and track doubles streaks correctly."""
+    dice = Dice()
+
+    with patch("random.randint", side_effect=[6, 6, 3, 4]):
+        assert dice.roll() == 12
+        assert dice.doubles_streak == 1
+        assert dice.roll() == 7
+        assert dice.doubles_streak == 0
