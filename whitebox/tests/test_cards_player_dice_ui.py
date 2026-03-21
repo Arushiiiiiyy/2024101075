@@ -54,3 +54,13 @@ def test_player_property_tracking_and_status_line():
 
     player.remove_property(prop)
     assert player.count_properties() == 0
+
+def test_player_move_awards_salary_when_passing_go():
+    """Moving past Go should credit salary, not only landing exactly on square zero."""
+    player = Player("Runner")
+    player.position = 39
+
+    new_position = player.move(2)
+
+    assert new_position == 1
+    assert player.balance == STARTING_BALANCE + GO_SALARY
