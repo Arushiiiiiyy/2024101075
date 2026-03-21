@@ -1,6 +1,13 @@
 """Describes the status and details of the player"""
-
+from dataclasses import dataclass
 from moneypoly.config import STARTING_BALANCE, BOARD_SIZE, GO_SALARY, JAIL_POSITION
+
+@dataclass
+class JailStatus:
+    """Tracks a player's jail state."""
+    in_jail: bool = False
+    jail_turns: int = 0
+    get_out_of_jail_cards: int = 0
 
 
 class Player:
@@ -11,9 +18,7 @@ class Player:
         self.balance = balance
         self.position = 0
         self.properties = []
-        self.in_jail = False
-        self.jail_turns = 0
-        self.get_out_of_jail_cards = 0
+        self.jail=JailStatus()
         self.is_eliminated = False
 
 
@@ -55,8 +60,8 @@ class Player:
     def go_to_jail(self):
         """Send this player directly to the Jail square."""
         self.position = JAIL_POSITION
-        self.in_jail = True
-        self.jail_turns = 0
+        self.jail.in_jail = True
+        self.jail.jail_turns = 0
 
 
     def add_property(self, prop):
@@ -76,7 +81,7 @@ class Player:
 
     def status_line(self):
         """Return a concise one-line status string for this player."""
-        jail_tag = " [JAILED]" if self.in_jail else ""
+        jail_tag = " [JAILED]" if self.jail.in_jail else ""
         return (
             f"{self.name}: ${self.balance}  "
             f"pos={self.position}  "
