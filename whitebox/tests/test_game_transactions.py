@@ -65,3 +65,23 @@ def test_mortgage_and_unmortgage_cover_owner_and_affordability_branches():
     assert game.unmortgage_property(owner, prop) is True
     assert prop.is_mortgaged is False
     assert game.unmortgage_property(owner, prop) is False
+
+def test_trade_requires_ownership_and_affordability_and_pays_seller():
+    """Trades should fail on invalid states and credit the seller on success."""
+    game = Game(["Seller", "Buyer"])
+    seller, buyer = game.players
+    prop = game.board.get_property_at(1)
+
+    assert game.trade(seller, buyer, prop, 50) is False
+
+    prop.owner = seller
+    seller.add_property(prop)
+    buyer.balance = 40
+    assert game.trade(seller, buyer, prop, 50) is False
+
+    seller.balance = 100
+    buyer.balance = 200
+    assert game.trade(seller, buyer, prop, 50) is True
+    assert seller.balance == 150
+    assert buyer.balance == 150
+    assert prop.owner == buyer
