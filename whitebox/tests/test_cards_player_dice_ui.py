@@ -26,3 +26,16 @@ def test_card_deck_draw_peek_cycle_and_empty_paths():
     assert deck.draw() == {"value": 2}
     assert deck.draw() == {"value": 1}
     assert deck.cards_remaining() == 1
+
+
+def test_player_money_validation_and_bankruptcy_state():
+    """Negative money operations should fail and zero balance counts as bankrupt."""
+    player = Player("Tester")
+
+    with pytest.raises(ValueError):
+        player.add_money(-1)
+    with pytest.raises(ValueError):
+        player.deduct_money(-1)
+
+    player.balance = 0
+    assert player.is_bankrupt() is True
