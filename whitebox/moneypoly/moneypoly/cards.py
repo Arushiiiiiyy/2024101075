@@ -56,7 +56,7 @@ COMMUNITY_CHEST_CARDS = [
     {"description": "Holiday fund matures. Receive $100.",
      "action": "collect",  
      "value": 100},
-    {"description": "Income tax refund. Collect $20.",  
+    {"description": "Income tax refund. Collect $20.",
      "action": "collect",  
      "value": 20},
     {"description": "It is your birthday. Collect $10 from every player.",

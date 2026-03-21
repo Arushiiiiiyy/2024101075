@@ -9,7 +9,8 @@ def print_banner(title):
 
 def print_player_card(player):
     """Print a detailed status card for a single player."""
-    jail_line = f"  Status  : IN JAIL (turn {player.jail.jail_turns}/3)\n" if player.jail.in_jail else ""
+    in_jail = player.jail.in_jail
+    jail_line = f"  Status  : IN JAIL (turn {player.jail.jail_turns}/3)\n" if in_jail else ""
     print(f"\n  Player  : {player.name}")
     print(f"  Balance : ${player.balance:,}")
     print(f"  Worth   : ${player.net_worth():,}")

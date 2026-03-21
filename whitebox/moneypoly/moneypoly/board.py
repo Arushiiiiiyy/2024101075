@@ -53,7 +53,7 @@ class Board:
     def _create_properties(self):
         """Instantiate every purchasable property and return as a list."""
         g = self.groups
-        return [                
+        return [
             Property("Mediterranean Avenue",   1,  PropertyConfig(60,  2),  g["brown"]),
             Property("Baltic Avenue",          3,  PropertyConfig(60,  4),  g["brown"]),
             Property("Oriental Avenue",        6,  PropertyConfig(100, 6),  g["light_blue"]),

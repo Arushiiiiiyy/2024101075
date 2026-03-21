@@ -9,7 +9,7 @@ class Dice:
         self.die2 = 0
         self.doubles_streak = 0
         self.reset()
-        
+
 
     def reset(self):
         """Reset dice face values and the doubles streak counter."""

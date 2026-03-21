@@ -28,8 +28,8 @@ class Property:
         self.group = group
         if group is not None and self not in group.properties:
             group.properties.append(self)
-    
-    #made a new function so that number of instance attribute decreases 
+
+    #made a new function so that number of instance attribute decreases
     @property
     def mortgage_value(self):
         """Return the mortgage payout value (half the purchase price)."""
@@ -65,7 +65,7 @@ class Property:
         """
         if not self.is_mortgaged:
             return 0
-        
+
         cost = int(self.mortgage_value * 1.1)
         self.is_mortgaged = False
         return cost

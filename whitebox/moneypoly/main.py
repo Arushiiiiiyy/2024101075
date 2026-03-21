@@ -1,15 +1,17 @@
 """Main module for the game, entry point ."""
 from moneypoly.game import Game
 
-"""Gets all players name"""
+
 def get_player_names():
+    """Gets all players name"""
     print("Enter player names separated by commas (minimum 2 players):")
     raw = input("> ").strip()
     names = [n.strip() for n in raw.split(",") if n.strip()]
     return names
 
-"""Main entry point function"""
+
 def main():
+    """Main entry point function"""
     names = get_player_names()
     try:
         game = Game(names)
