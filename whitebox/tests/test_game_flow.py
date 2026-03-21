@@ -32,3 +32,19 @@ def test_find_winner_returns_highest_net_worth_player():
     game.players[2].balance = 300
 
     assert game.find_winner() == game.players[1]
+
+def test_handle_jail_turn_deducts_fine_when_player_pays_voluntarily():
+    """Paying the jail fine voluntarily should deduct money from the player."""
+    game = Game(["A", "B"])
+    player = game.players[0]
+    player.go_to_jail()
+    player.balance = 100
+
+    with patch("moneypoly.ui.confirm", side_effect=[True]), \
+         patch.object(game.dice, "roll", return_value=6), \
+         patch.object(game, "_move_and_resolve"):
+        game._handle_jail_turn(player)
+
+    assert player.balance == 100 - JAIL_FINE
+    assert player.jail.in_jail is False
+
