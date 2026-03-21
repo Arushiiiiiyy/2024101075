@@ -1,3 +1,4 @@
+"""This function contains all bank logic"""
 import math
 from moneypoly.config import BANK_STARTING_FUNDS
 
