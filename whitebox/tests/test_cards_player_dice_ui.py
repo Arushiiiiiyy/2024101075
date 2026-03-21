@@ -39,3 +39,18 @@ def test_player_money_validation_and_bankruptcy_state():
 
     player.balance = 0
     assert player.is_bankrupt() is True
+
+def test_player_property_tracking_and_status_line():
+    """Player property helper methods and status rendering should reflect state changes."""
+    player = Player("Tester")
+    prop = make_property()
+
+    player.add_property(prop)
+    assert player.count_properties() == 1
+    assert "props=1" in player.status_line()
+
+    player.go_to_jail()
+    assert "[JAILED]" in player.status_line()
+
+    player.remove_property(prop)
+    assert player.count_properties() == 0
