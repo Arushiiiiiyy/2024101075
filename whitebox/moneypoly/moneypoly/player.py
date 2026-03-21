@@ -1,5 +1,5 @@
 """Describes the status and details of the player"""
-import sys
+
 from moneypoly.config import STARTING_BALANCE, BOARD_SIZE, GO_SALARY, JAIL_POSITION
 
 
