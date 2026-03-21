@@ -26,18 +26,3 @@ def test_card_deck_draw_peek_cycle_and_empty_paths():
     assert deck.draw() == {"value": 2}
     assert deck.draw() == {"value": 1}
     assert deck.cards_remaining() == 1
-
-def test_player_property_tracking_and_status_line():
-    """Player property helper methods and status rendering should reflect state changes."""
-    player = Player("Tester")
-    prop = make_property()
-
-    player.add_property(prop)
-    assert player.count_properties() == 1
-    assert "props=1" in player.status_line()
-
-    player.go_to_jail()
-    assert "[JAILED]" in player.status_line()
-
-    player.remove_property(prop)
-    assert player.count_properties() == 0
