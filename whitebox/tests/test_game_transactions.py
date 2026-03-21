@@ -85,3 +85,47 @@ def test_trade_requires_ownership_and_affordability_and_pays_seller():
     assert seller.balance == 150
     assert buyer.balance == 150
     assert prop.owner == buyer
+
+def test_handle_property_tile_branches(monkeypatch):
+    """Property tile handling should cover buy, auction, pass, owned, and rent branches."""
+    game = Game(["A", "B"])
+    player, other = game.players
+    prop = game.board.get_property_at(1)
+
+    monkeypatch.setattr("builtins.input", lambda _prompt: "b")
+    with patch.object(game, "buy_property") as buy_property:
+        game._handle_property_tile(player, prop)
+        buy_property.assert_called_once_with(player, prop)
+
+    monkeypatch.setattr("builtins.input", lambda _prompt: "a")
+    with patch.object(game, "auction_property") as auction_property:
+        game._handle_property_tile(player, prop)
+        auction_property.assert_called_once_with(prop)
+
+    monkeypatch.setattr("builtins.input", lambda _prompt: "s")
+    game._handle_property_tile(player, prop)
+
+    prop.owner = player
+    player.add_property(prop)
+    game._handle_property_tile(player, prop)
+
+    prop.owner = other
+    with patch.object(game, "pay_rent") as pay_rent:
+        game._handle_property_tile(player, prop)
+        pay_rent.assert_called_once_with(player, prop)
+
+def test_auction_property_covers_no_bid_and_winning_bid_paths(monkeypatch):
+    """Auctions should leave property unowned when everyone passes and sell to top bidder otherwise."""
+    game = Game(["A", "B"])
+    prop = game.board.get_property_at(1)
+
+    bids = iter([0, 0])
+    monkeypatch.setattr("moneypoly.ui.safe_int_input", lambda *_args, **_kwargs: next(bids))
+    game.auction_property(prop)
+    assert prop.owner is None
+
+    prop.owner = None
+    bids = iter([20, 40])
+    monkeypatch.setattr("moneypoly.ui.safe_int_input", lambda *_args, **_kwargs: next(bids))
+    game.auction_property(prop)
+    assert prop.owner == game.players[1]

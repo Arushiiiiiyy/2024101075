@@ -73,3 +73,42 @@ def test_dice_roll_tracks_doubles_and_uses_full_six_sided_range():
         mock_randint.side_effect = [6, 6, 3, 4]
         dice.roll()
         mock_randint.assert_any_call(1, 6)
+
+def test_card_deck_reshuffle_length_and_repr(monkeypatch):
+    """Deck helpers should reshuffle cards, report length, and include counts in repr."""
+    deck = CardDeck([{"value": 1}, {"value": 2}, {"value": 3}])
+    monkeypatch.setattr("random.shuffle", lambda cards: cards.reverse())
+
+    deck.reshuffle()
+
+    assert deck.cards == [{"value": 3}, {"value": 2}, {"value": 1}]
+    assert len(deck) == 3
+    assert "CardDeck(3 cards" in repr(deck)
+
+def test_ui_helpers_cover_formatting_and_input(monkeypatch, capsys):
+    """UI helpers should format output and handle invalid inputs safely."""
+    player = Player("UI Tester")
+    prop = make_property()
+    prop.owner = player
+    player.add_property(prop)
+    board = Board()
+    board.get_property_at(1).owner = player
+
+    ui.print_banner("Title")
+    ui.print_player_card(player)
+    ui.print_standings([player])
+    ui.print_board_ownership(board)
+    output = capsys.readouterr().out
+
+    assert "Title" in output
+    assert "UI Tester" in output
+    assert ui.format_currency(1500) == "$1,500"
+
+    monkeypatch.setattr("builtins.input", lambda _prompt: "15")
+    assert ui.safe_int_input(">", default=0) == 15
+
+    monkeypatch.setattr("builtins.input", lambda _prompt: "bad")
+    assert ui.safe_int_input(">", default=7) == 7
+
+    monkeypatch.setattr("builtins.input", lambda _prompt: "y")
+    assert ui.confirm("?") is True

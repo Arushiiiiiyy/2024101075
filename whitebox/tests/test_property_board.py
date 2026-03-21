@@ -1,0 +1,89 @@
+"""White-box tests for property and board helpers."""
+
+from moneypoly.board import Board
+from moneypoly.player import Player
+from moneypoly.property import PropertyGroup
+
+from test_helpers import make_property
+
+
+def test_property_group_requires_full_ownership_for_bonus_rent():
+    """A full group bonus should only apply when one player owns every property."""
+    group = PropertyGroup("Brown", "brown")
+    owner = Player("Owner")
+    rival = Player("Rival")
+    first = make_property("A", 1, rent=20, group=group)
+    second = make_property("B", 3, rent=20, group=group)
+
+    first.owner = owner
+    second.owner = rival
+
+    assert group.all_owned_by(owner) is False
+    assert first.get_rent() == 20
+
+
+def test_property_get_rent_returns_zero_when_mortgaged():
+    """Mortgaged properties should not charge rent."""
+    prop = make_property(rent=25)
+    prop.is_mortgaged = True
+
+    assert prop.get_rent() == 0
+
+
+def test_property_mortgage_and_unmortgage_paths():
+    """Mortgage helpers should return correct values and state transitions."""
+    prop = make_property(price=120)
+
+    assert prop.mortgage() == 60
+    assert prop.is_mortgaged is True
+    assert prop.mortgage() == 0
+    assert prop.unmortgage() == 66
+    assert prop.is_mortgaged is False
+    assert prop.unmortgage() == 0
+
+
+def test_property_availability_and_group_helpers():
+    """Property helper methods should reflect owner state and group counts."""
+    group = PropertyGroup("Blue", "blue")
+    owner = Player("Owner")
+    prop = make_property(group=group)
+
+    assert prop.is_available() is True
+    assert group.size() == 1
+    assert group.get_owner_counts() == {}
+
+    prop.owner = owner
+    assert prop.is_available() is False
+    assert group.get_owner_counts() == {owner: 1}
+
+
+def test_board_tile_type_and_purchase_checks_cover_branches():
+    """Board helpers should distinguish special, property, blank, and mortgaged states."""
+    board = Board()
+    prop = board.get_property_at(1)
+
+    assert board.get_tile_type(0) == "go"
+    assert board.get_tile_type(1) == "property"
+    assert board.get_tile_type(12) == "blank"
+    assert board.is_purchasable(0) is False
+    assert board.is_purchasable(1) is True
+
+    prop.is_mortgaged = True
+    assert board.is_purchasable(1) is False
+
+    prop.is_mortgaged = False
+    prop.owner = Player("Owner")
+    assert board.is_purchasable(1) is False
+
+
+def test_board_special_tile_and_ownership_lists():
+    """Board list helpers should track owned and unowned properties correctly."""
+    board = Board()
+    owner = Player("Owner")
+    prop = board.get_property_at(1)
+    prop.owner = owner
+
+    assert board.is_special_tile(0) is True
+    assert board.is_special_tile(1) is False
+    assert board.properties_owned_by(owner) == [prop]
+    assert prop not in board.unowned_properties()
