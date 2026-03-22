@@ -69,7 +69,7 @@ results = {}
 # }
 # ------------------------------------------------------------------
 missions = {}
-
+sponsors = {}
 # ------------------------------------------------------------------
 # TRAINING SESSIONS  (Training module)
 # Key   : session_id (str)  e.g. "T001"
@@ -91,6 +91,7 @@ _counters = {
     "mission"  : 0,
     "training" : 0,
     "result"   : 0,
+    "sponsor"  : 0,
 }
 
 def _next_id(prefix: str, counter_key: str) -> str:
@@ -107,7 +108,7 @@ VALID_CONDITIONS = {"good", "damaged", "under_repair"}
 VALID_MISSION_TYPES = {"delivery", "rescue", "sabotage", "recon"}
 VALID_RACE_STATUSES = {"scheduled", "ongoing", "completed"}
 VALID_MEMBER_STATUSES = {"active", "inactive"}
-
+VALID_SPONSOR_TIERS = {"bronze", "silver", "gold"}
 
 def reset_database():
     """
@@ -119,7 +120,7 @@ def reset_database():
     results.clear()
     missions.clear()
     training_sessions.clear()
-
+    sponsors.clear() 
     global spare_parts, tools, cash_balance
     spare_parts = 0
     tools = 0
