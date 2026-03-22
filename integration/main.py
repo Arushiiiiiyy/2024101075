@@ -13,6 +13,7 @@ sys.path.insert(0, os.path.dirname(__file__))
 # Part 1 — Registration + Crew Management
 # Part 2 — + Inventory
 # Part 3 — + Race Management
+# Part 4 — + Results
 # ----------------------------------------------------------------
 
 from registration.registration import (
@@ -37,6 +38,10 @@ from race_management.race_management import (
     enter_driver, assign_car, start_race,
     complete_race, get_race_drivers, get_race_cars,
     list_available_drivers, list_available_cars,
+)
+from results.results import (
+    record_result, get_result, list_results,
+    get_winner, get_leaderboard, get_driver_results,
 )
 
 
@@ -368,18 +373,18 @@ def menu_inventory():
 def menu_race_management():
     while True:
         print_menu("RACE MANAGEMENT", {
-            "1": "Create race",
-            "2": "View race by ID",
-            "3": "List all races",
-            "4": "Enter driver into race",
-            "5": "Assign car to race",
-            "6": "Start race",
-            "7": "Complete race",
-            "8": "View race drivers",
-            "9": "View race cars",
+            "1" : "Create race",
+            "2" : "View race by ID",
+            "3" : "List all races",
+            "4" : "Enter driver into race",
+            "5" : "Assign car to race",
+            "6" : "Start race",
+            "7" : "Complete race",
+            "8" : "View race drivers",
+            "9" : "View race cars",
             "10": "List available drivers",
             "11": "List available cars",
-            "0": "Back",
+            "0" : "Back",
         })
         choice = get_input("Choose option")
 
@@ -471,6 +476,97 @@ def menu_race_management():
 
 
 # ----------------------------------------------------------------
+# RESULTS MENU
+# ----------------------------------------------------------------
+
+def menu_results():
+    while True:
+        print_menu("RESULTS", {
+            "1": "Record race result",
+            "2": "View result by race ID",
+            "3": "List all results",
+            "4": "Get race winner",
+            "5": "View leaderboard",
+            "6": "View driver race history",
+            "0": "Back",
+        })
+        choice = get_input("Choose option")
+
+        if choice == "1":
+            rid = get_input("Race ID")
+            raw = get_input("Driver rankings (comma-separated IDs, 1st to last)")
+            rankings = [r.strip().upper() for r in raw.split(",") if r.strip()]
+            try:
+                prize = float(get_input("Prize money ($)"))
+            except ValueError:
+                print("\n  ✗ Prize must be a number.")
+                continue
+            dmg_raw = get_input("Damaged car IDs (comma-separated, or leave blank)")
+            damages = [c.strip().upper() for c in dmg_raw.split(",") if c.strip()]
+            result = record_result(rid, rankings, prize, damages)
+            print(f"\n  {'✓' if result['success'] else '✗'} {result['message']}")
+
+        elif choice == "2":
+            rid = get_input("Race ID")
+            result = get_result(rid)
+            if result["success"]:
+                r = result["result"]
+                print(f"\n  Winner     : {r['winner_id']}")
+                print(f"  Rankings   : {r['rankings']}")
+                print(f"  Prize      : ${r['prize_money']:.2f}")
+                print(f"  Damages    : {r['damages'] or 'none'}")
+            else:
+                print(f"\n  ✗ {result['message']}")
+
+        elif choice == "3":
+            results = list_results()["results"]
+            if not results:
+                print("\n  No results recorded yet.")
+            else:
+                print(f"\n  {'Race ID':<10} {'Winner':<10} {'Prize':<12} {'Damages'}")
+                print("  " + "-" * 45)
+                for r in results:
+                    print(f"  {r['race_id']:<10} {r['winner_id']:<10} "
+                          f"${r['prize_money']:<11.2f} {r['damages'] or 'none'}")
+
+        elif choice == "4":
+            rid = get_input("Race ID")
+            result = get_winner(rid)
+            if result["success"]:
+                print(f"\n  Winner: {result['winner_name']} (ID: {result['winner_id']})")
+            else:
+                print(f"\n  ✗ {result['message']}")
+
+        elif choice == "5":
+            board = get_leaderboard()["leaderboard"]
+            if not board:
+                print("\n  No races completed yet.")
+            else:
+                print(f"\n  {'#':<4} {'ID':<8} {'Name':<20} {'Wins'}")
+                print("  " + "-" * 38)
+                for i, entry in enumerate(board, 1):
+                    print(f"  {i:<4} {entry['member_id']:<8} {entry['name']:<20} {entry['wins']}")
+
+        elif choice == "6":
+            mid = get_input("Driver member ID")
+            result = get_driver_results(mid)
+            if not result["success"]:
+                print(f"\n  ✗ {result['message']}")
+            elif not result["races"]:
+                print("\n  No race history for this driver.")
+            else:
+                print(f"\n  {'Race ID':<10} {'Position':<10} {'Prize'}")
+                print("  " + "-" * 32)
+                for r in result["races"]:
+                    print(f"  {r['race_id']:<10} {r['position']:<10} ${r['prize_money']:.2f}")
+
+        elif choice == "0":
+            break
+        else:
+            print("\n  Invalid option. Try again.")
+
+
+# ----------------------------------------------------------------
 # MAIN MENU
 # ----------------------------------------------------------------
 
@@ -485,6 +581,7 @@ def main():
             "2": "Crew Management",
             "3": "Inventory",
             "4": "Race Management",
+            "5": "Results",
             "0": "Exit",
         })
         choice = get_input("Choose module")
@@ -497,6 +594,8 @@ def main():
             menu_inventory()
         elif choice == "4":
             menu_race_management()
+        elif choice == "5":
+            menu_results()
         elif choice == "0":
             print("\n  Goodbye. Stay off the radar.\n")
             sys.exit(0)
