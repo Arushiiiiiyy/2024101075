@@ -14,6 +14,7 @@ sys.path.insert(0, os.path.dirname(__file__))
 # Part 2 — + Inventory
 # Part 3 — + Race Management
 # Part 4 — + Results
+# Part 5 — + Mission Planning
 # ----------------------------------------------------------------
 
 from registration.registration import (
@@ -42,6 +43,12 @@ from race_management.race_management import (
 from results.results import (
     record_result, get_result, list_results,
     get_winner, get_leaderboard, get_driver_results,
+)
+from mission_planning.mission_planning import (
+    create_mission, get_mission, list_missions,
+    assign_crew_member, remove_crew_member,
+    start_mission, complete_mission, fail_mission,
+    check_roles_available,
 )
 
 
@@ -101,8 +108,7 @@ def menu_registration():
                 print(f"\n  ✗ {result['message']}")
 
         elif choice == "3":
-            result = list_members()
-            members = result["members"]
+            members = list_members()["members"]
             if not members:
                 print("\n  No crew members registered yet.")
             else:
@@ -192,8 +198,7 @@ def menu_crew_management():
                     print(f"  {m['id']:<8} {m['name']:<20} {m['skill_level']}")
 
         elif choice == "6":
-            result = get_crew_summary()
-            summary = result["summary"]
+            summary = get_crew_summary()["summary"]
             if not summary:
                 print("\n  No crew members found.")
             else:
@@ -260,8 +265,7 @@ def menu_inventory():
                 print(f"\n  ✗ {result['message']}")
 
         elif choice == "3":
-            result = list_cars()
-            cars = result["cars"]
+            cars = list_cars()["cars"]
             if not cars:
                 print("\n  No cars in inventory.")
             else:
@@ -273,9 +277,9 @@ def menu_inventory():
         elif choice == "4":
             available = get_available_cars()
             if not available:
-                print("\n  No cars available (good + unassigned).")
+                print("\n  No cars available.")
             else:
-                print(f"\n  Available car IDs: {', '.join(available)}")
+                print(f"\n  Available: {', '.join(available)}")
 
         elif choice == "5":
             cid = get_input("Enter car ID")
@@ -291,32 +295,28 @@ def menu_inventory():
 
         elif choice == "7":
             try:
-                amt = int(get_input("How many spare parts to add"))
-                result = add_spare_parts(amt)
+                result = add_spare_parts(int(get_input("Spare parts to add")))
                 print(f"\n  {'✓' if result['success'] else '✗'} {result['message']}")
             except ValueError:
                 print("\n  ✗ Must be a number.")
 
         elif choice == "8":
             try:
-                amt = int(get_input("How many spare parts to use"))
-                result = use_spare_parts(amt)
+                result = use_spare_parts(int(get_input("Spare parts to use")))
                 print(f"\n  {'✓' if result['success'] else '✗'} {result['message']}")
             except ValueError:
                 print("\n  ✗ Must be a number.")
 
         elif choice == "9":
             try:
-                amt = int(get_input("How many tools to add"))
-                result = add_tools(amt)
+                result = add_tools(int(get_input("Tools to add")))
                 print(f"\n  {'✓' if result['success'] else '✗'} {result['message']}")
             except ValueError:
                 print("\n  ✗ Must be a number.")
 
         elif choice == "10":
             try:
-                amt = int(get_input("How many tools to use"))
-                result = use_tools(amt)
+                result = use_tools(int(get_input("Tools to use")))
                 print(f"\n  {'✓' if result['success'] else '✗'} {result['message']}")
             except ValueError:
                 print("\n  ✗ Must be a number.")
@@ -328,23 +328,20 @@ def menu_inventory():
 
         elif choice == "12":
             try:
-                amt = float(get_input("Amount to add ($)"))
-                result = add_cash(amt)
+                result = add_cash(float(get_input("Amount to add ($)")))
                 print(f"\n  {'✓' if result['success'] else '✗'} {result['message']}")
             except ValueError:
                 print("\n  ✗ Must be a number.")
 
         elif choice == "13":
             try:
-                amt = float(get_input("Amount to deduct ($)"))
-                result = deduct_cash(amt)
+                result = deduct_cash(float(get_input("Amount to deduct ($)")))
                 print(f"\n  {'✓' if result['success'] else '✗'} {result['message']}")
             except ValueError:
                 print("\n  ✗ Must be a number.")
 
         elif choice == "14":
-            bal = get_cash_balance()
-            print(f"\n  Cash Balance: ${bal['cash_balance']:.2f}")
+            print(f"\n  Cash Balance: ${get_cash_balance()['cash_balance']:.2f}")
 
         elif choice == "15":
             s = get_inventory_summary()
@@ -389,13 +386,11 @@ def menu_race_management():
         choice = get_input("Choose option")
 
         if choice == "1":
-            name = get_input("Race name")
-            result = create_race(name)
+            result = create_race(get_input("Race name"))
             print(f"\n  {'✓' if result['success'] else '✗'} {result['message']}")
 
         elif choice == "2":
-            rid = get_input("Enter race ID (e.g. R001)")
-            result = get_race(rid)
+            result = get_race(get_input("Race ID (e.g. R001)"))
             if result["success"]:
                 r = result["race"]
                 print(f"\n  Name    : {r['name']}")
@@ -406,10 +401,9 @@ def menu_race_management():
                 print(f"\n  ✗ {result['message']}")
 
         elif choice == "3":
-            result = list_races()
-            races = result["races"]
+            races = list_races()["races"]
             if not races:
-                print("\n  No races created yet.")
+                print("\n  No races yet.")
             else:
                 print(f"\n  {'ID':<8} {'Name':<20} {'Status':<12} {'Drivers':<10} {'Cars'}")
                 print("  " + "-" * 58)
@@ -418,56 +412,42 @@ def menu_race_management():
                           f"{len(r['driver_ids']):<10} {len(r['car_ids'])}")
 
         elif choice == "4":
-            rid = get_input("Race ID")
-            mid = get_input("Driver member ID")
-            result = enter_driver(rid, mid)
+            result = enter_driver(get_input("Race ID"), get_input("Driver member ID"))
             print(f"\n  {'✓' if result['success'] else '✗'} {result['message']}")
 
         elif choice == "5":
-            rid = get_input("Race ID")
-            cid = get_input("Car ID")
-            result = assign_car(rid, cid)
+            result = assign_car(get_input("Race ID"), get_input("Car ID"))
             print(f"\n  {'✓' if result['success'] else '✗'} {result['message']}")
 
         elif choice == "6":
-            rid = get_input("Race ID to start")
-            result = start_race(rid)
+            result = start_race(get_input("Race ID to start"))
             print(f"\n  {'✓' if result['success'] else '✗'} {result['message']}")
 
         elif choice == "7":
-            rid = get_input("Race ID to complete")
-            result = complete_race(rid)
+            result = complete_race(get_input("Race ID to complete"))
             print(f"\n  {'✓' if result['success'] else '✗'} {result['message']}")
 
         elif choice == "8":
-            rid = get_input("Race ID")
-            result = get_race_drivers(rid)
+            result = get_race_drivers(get_input("Race ID"))
             if result["success"]:
-                print(f"\n  Drivers in race: {result['driver_ids'] or 'none'}")
+                print(f"\n  Drivers: {result['driver_ids'] or 'none'}")
             else:
                 print(f"\n  ✗ {result['message']}")
 
         elif choice == "9":
-            rid = get_input("Race ID")
-            result = get_race_cars(rid)
+            result = get_race_cars(get_input("Race ID"))
             if result["success"]:
-                print(f"\n  Cars in race: {result['car_ids'] or 'none'}")
+                print(f"\n  Cars: {result['car_ids'] or 'none'}")
             else:
                 print(f"\n  ✗ {result['message']}")
 
         elif choice == "10":
-            result = list_available_drivers()
-            if not result["driver_ids"]:
-                print("\n  No available drivers.")
-            else:
-                print(f"\n  Available drivers: {', '.join(result['driver_ids'])}")
+            ids = list_available_drivers()["driver_ids"]
+            print(f"\n  Available drivers: {', '.join(ids) if ids else 'none'}")
 
         elif choice == "11":
-            result = list_available_cars()
-            if not result["car_ids"]:
-                print("\n  No available cars.")
-            else:
-                print(f"\n  Available cars: {', '.join(result['car_ids'])}")
+            ids = list_available_cars()["car_ids"]
+            print(f"\n  Available cars: {', '.join(ids) if ids else 'none'}")
 
         elif choice == "0":
             break
@@ -507,21 +487,20 @@ def menu_results():
             print(f"\n  {'✓' if result['success'] else '✗'} {result['message']}")
 
         elif choice == "2":
-            rid = get_input("Race ID")
-            result = get_result(rid)
+            result = get_result(get_input("Race ID"))
             if result["success"]:
                 r = result["result"]
-                print(f"\n  Winner     : {r['winner_id']}")
-                print(f"  Rankings   : {r['rankings']}")
-                print(f"  Prize      : ${r['prize_money']:.2f}")
-                print(f"  Damages    : {r['damages'] or 'none'}")
+                print(f"\n  Winner   : {r['winner_id']}")
+                print(f"  Rankings : {r['rankings']}")
+                print(f"  Prize    : ${r['prize_money']:.2f}")
+                print(f"  Damages  : {r['damages'] or 'none'}")
             else:
                 print(f"\n  ✗ {result['message']}")
 
         elif choice == "3":
             results = list_results()["results"]
             if not results:
-                print("\n  No results recorded yet.")
+                print("\n  No results yet.")
             else:
                 print(f"\n  {'Race ID':<10} {'Winner':<10} {'Prize':<12} {'Damages'}")
                 print("  " + "-" * 45)
@@ -530,10 +509,9 @@ def menu_results():
                           f"${r['prize_money']:<11.2f} {r['damages'] or 'none'}")
 
         elif choice == "4":
-            rid = get_input("Race ID")
-            result = get_winner(rid)
+            result = get_winner(get_input("Race ID"))
             if result["success"]:
-                print(f"\n  Winner: {result['winner_name']} (ID: {result['winner_id']})")
+                print(f"\n  Winner: {result['winner_name']} ({result['winner_id']})")
             else:
                 print(f"\n  ✗ {result['message']}")
 
@@ -544,21 +522,116 @@ def menu_results():
             else:
                 print(f"\n  {'#':<4} {'ID':<8} {'Name':<20} {'Wins'}")
                 print("  " + "-" * 38)
-                for i, entry in enumerate(board, 1):
-                    print(f"  {i:<4} {entry['member_id']:<8} {entry['name']:<20} {entry['wins']}")
+                for i, e in enumerate(board, 1):
+                    print(f"  {i:<4} {e['member_id']:<8} {e['name']:<20} {e['wins']}")
 
         elif choice == "6":
-            mid = get_input("Driver member ID")
-            result = get_driver_results(mid)
+            result = get_driver_results(get_input("Driver member ID"))
             if not result["success"]:
                 print(f"\n  ✗ {result['message']}")
             elif not result["races"]:
-                print("\n  No race history for this driver.")
+                print("\n  No race history.")
             else:
                 print(f"\n  {'Race ID':<10} {'Position':<10} {'Prize'}")
                 print("  " + "-" * 32)
                 for r in result["races"]:
                     print(f"  {r['race_id']:<10} {r['position']:<10} ${r['prize_money']:.2f}")
+
+        elif choice == "0":
+            break
+        else:
+            print("\n  Invalid option. Try again.")
+
+
+# ----------------------------------------------------------------
+# MISSION PLANNING MENU
+# ----------------------------------------------------------------
+
+def menu_mission_planning():
+    while True:
+        print_menu("MISSION PLANNING", {
+            "1" : "Create mission",
+            "2" : "View mission by ID",
+            "3" : "List all missions",
+            "4" : "Assign crew member to mission",
+            "5" : "Remove crew member from mission",
+            "6" : "Start mission",
+            "7" : "Complete mission",
+            "8" : "Fail mission",
+            "9" : "Check roles available",
+            "0" : "Back",
+        })
+        choice = get_input("Choose option")
+
+        if choice == "1":
+            name = get_input("Mission name")
+            print("  Types: delivery | rescue | sabotage | recon")
+            mtype = get_input("Mission type")
+            raw = get_input("Required roles (comma-separated)")
+            roles = [r.strip().lower() for r in raw.split(",") if r.strip()]
+            result = create_mission(name, mtype, roles)
+            print(f"\n  {'✓' if result['success'] else '✗'} {result['message']}")
+
+        elif choice == "2":
+            result = get_mission(get_input("Mission ID (e.g. MI001)"))
+            if result["success"]:
+                m = result["mission"]
+                print(f"\n  Name           : {m['name']}")
+                print(f"  Type           : {m['type']}")
+                print(f"  Status         : {m['status']}")
+                print(f"  Required roles : {m['required_roles']}")
+                print(f"  Assigned crew  : {m['assigned_crew'] or 'none'}")
+            else:
+                print(f"\n  ✗ {result['message']}")
+
+        elif choice == "3":
+            missions = list_missions()["missions"]
+            if not missions:
+                print("\n  No missions yet.")
+            else:
+                print(f"\n  {'ID':<8} {'Name':<20} {'Type':<12} {'Status':<12} {'Crew'}")
+                print("  " + "-" * 60)
+                for m in missions:
+                    print(f"  {m['id']:<8} {m['name']:<20} {m['type']:<12} "
+                          f"{m['status']:<12} {len(m['assigned_crew'])}")
+
+        elif choice == "4":
+            mid_m = get_input("Mission ID")
+            mid_c = get_input("Crew member ID")
+            result = assign_crew_member(mid_m, mid_c)
+            print(f"\n  {'✓' if result['success'] else '✗'} {result['message']}")
+
+        elif choice == "5":
+            mid_m = get_input("Mission ID")
+            mid_c = get_input("Crew member ID to remove")
+            result = remove_crew_member(mid_m, mid_c)
+            print(f"\n  {'✓' if result['success'] else '✗'} {result['message']}")
+
+        elif choice == "6":
+            result = start_mission(get_input("Mission ID to start"))
+            if result["success"]:
+                print(f"\n  ✓ {result['message']}")
+            else:
+                print(f"\n  ✗ {result['message']}")
+                if result.get("missing_roles"):
+                    print(f"  Missing roles: {result['missing_roles']}")
+
+        elif choice == "7":
+            result = complete_mission(get_input("Mission ID to complete"))
+            print(f"\n  {'✓' if result['success'] else '✗'} {result['message']}")
+
+        elif choice == "8":
+            result = fail_mission(get_input("Mission ID to fail"))
+            print(f"\n  {'✓' if result['success'] else '✗'} {result['message']}")
+
+        elif choice == "9":
+            raw = get_input("Roles to check (comma-separated)")
+            roles = [r.strip().lower() for r in raw.split(",") if r.strip()]
+            result = check_roles_available(roles)
+            if result["success"]:
+                print(f"\n  ✓ All required roles are available.")
+            else:
+                print(f"\n  ✗ Missing roles: {result['missing_roles']}")
 
         elif choice == "0":
             break
@@ -582,6 +655,7 @@ def main():
             "3": "Inventory",
             "4": "Race Management",
             "5": "Results",
+            "6": "Mission Planning",
             "0": "Exit",
         })
         choice = get_input("Choose module")
@@ -596,6 +670,8 @@ def main():
             menu_race_management()
         elif choice == "5":
             menu_results()
+        elif choice == "6":
+            menu_mission_planning()
         elif choice == "0":
             print("\n  Goodbye. Stay off the radar.\n")
             sys.exit(0)
