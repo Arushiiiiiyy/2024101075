@@ -181,7 +181,7 @@ class TestSponsorDriverValidation:
 
     def test_sponsor_backs_registered_driver(self):
         """
-        WHY: Sponsorship must verify the driver exists in
+        Sponsorship must verify the driver exists in
         Registration before accepting the sponsor deal.
         """
         d = _driver()
@@ -219,11 +219,10 @@ class TestSponsorDriverValidation:
         assert "inactive" in result["message"].lower()
 
 
-# ------------------------------------------------------------------
-# SCENARIO 4
+
 # Deactivated sponsor cannot claim bonuses.
 # Modules: Sponsorship internal lifecycle
-# ------------------------------------------------------------------
+
 
 class TestSponsorLifecycle:
 

@@ -56,6 +56,11 @@ from sponsorship.sponsorship import (
     claim_win_bonus, deactivate_sponsor,
     reactivate_sponsor, get_sponsorship_summary,
 )
+from training.training import (
+    conduct_session, get_member_sessions,
+    list_all_sessions, get_skill_summary,
+    get_top_drivers, get_total_sessions_count,
+)
 
 
 # ----------------------------------------------------------------
@@ -716,6 +721,103 @@ def menu_sponsorship():
 
 
 # ----------------------------------------------------------------
+# TRAINING MENU
+# ----------------------------------------------------------------
+
+def menu_training():
+    while True:
+        print_menu("TRAINING", {
+            "1": "Conduct training session",
+            "2": "View member session history",
+            "3": "List all sessions",
+            "4": "Get skill summary (all crew)",
+            "5": "Get top drivers by skill",
+            "6": "Get session count for member",
+            "0": "Back",
+        })
+        choice = get_input("Choose option")
+
+        if choice == "1":
+            mid = get_input("Member ID")
+            try:
+                gain = int(get_input("Skill gain (1-3)"))
+            except ValueError:
+                print("\n  ✗ Must be a number.")
+                continue
+            notes = get_input("Notes (optional, press enter to skip)")
+            result = conduct_session(mid, skill_gain=gain, notes=notes)
+            if result["success"]:
+                print(f"\n  ✓ {result['message']}")
+                print(f"  Session ID : {result['session_id']}")
+                print(f"  Skill      : {result['old_skill']} → {result['new_skill']}")
+            else:
+                print(f"\n  ✗ {result['message']}")
+
+        elif choice == "2":
+            mid = get_input("Member ID")
+            result = get_member_sessions(mid)
+            if not result["success"]:
+                print(f"\n  ✗ {result['message']}")
+            elif not result["sessions"]:
+                print("\n  No training sessions found.")
+            else:
+                print(f"\n  {'Session ID':<12} {'Skill Gained':<14} {'Notes'}")
+                print("  " + "-" * 45)
+                for s in result["sessions"]:
+                    print(f"  {s['id']:<12} {s['skill_gained']:<14} {s['notes'] or '-'}")
+
+        elif choice == "3":
+            sessions = list_all_sessions()["sessions"]
+            if not sessions:
+                print("\n  No training sessions yet.")
+            else:
+                print(f"\n  {'Session ID':<12} {'Member ID':<12} {'Gained':<8} {'Notes'}")
+                print("  " + "-" * 50)
+                for s in sessions:
+                    print(f"  {s['id']:<12} {s['member_id']:<12} {s['skill_gained']:<8} {s['notes'] or '-'}")
+
+        elif choice == "4":
+            summary = get_skill_summary()["members"]
+            if not summary:
+                print("\n  No crew members found.")
+            else:
+                print(f"\n  {'#':<4} {'ID':<8} {'Name':<20} {'Role':<12} {'Skill':<7} {'Status'}")
+                print("  " + "-" * 58)
+                for i, m in enumerate(summary, 1):
+                    print(f"  {i:<4} {m['id']:<8} {m['name']:<20} {m['role']:<12} {m['skill_level']:<7} {m['status']}")
+
+        elif choice == "5":
+            try:
+                n = int(get_input("How many top drivers to show"))
+            except ValueError:
+                print("\n  ✗ Must be a number.")
+                continue
+            result = get_top_drivers(n)
+            if not result["success"]:
+                print(f"\n  ✗ {result['message']}")
+            elif not result["drivers"]:
+                print("\n  No active drivers found.")
+            else:
+                print(f"\n  {'#':<4} {'ID':<8} {'Name':<20} {'Skill'}")
+                print("  " + "-" * 38)
+                for i, d in enumerate(result["drivers"], 1):
+                    print(f"  {i:<4} {d['id']:<8} {d['name']:<20} {d['skill_level']}")
+
+        elif choice == "6":
+            mid = get_input("Member ID")
+            result = get_total_sessions_count(mid)
+            if result["success"]:
+                print(f"\n  Total sessions: {result['count']}")
+            else:
+                print(f"\n  ✗ {result['message']}")
+
+        elif choice == "0":
+            break
+        else:
+            print("\n  Invalid option. Try again.")
+
+
+# ----------------------------------------------------------------
 # MAIN MENU
 # ----------------------------------------------------------------
 
@@ -733,6 +835,7 @@ def main():
             "5": "Results",
             "6": "Mission Planning",
             "7": "Sponsorship",
+            "8": "Training",
             "0": "Exit",
         })
         choice = get_input("Choose module")
@@ -751,6 +854,8 @@ def main():
             menu_mission_planning()
         elif choice == "7":
             menu_sponsorship()
+        elif choice == "8":
+            menu_training()
         elif choice == "0":
             print("\n  Goodbye. Stay off the radar.\n")
             sys.exit(0)
