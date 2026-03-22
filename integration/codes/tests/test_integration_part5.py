@@ -217,11 +217,10 @@ class TestDamagedCarMechanicCheck:
         assert result["success"] is False
 
 
-# ------------------------------------------------------------------
-# SCENARIO 4
+
 # Mission full lifecycle — planned → active → completed/failed.
 # Modules: Registration + Mission Planning
-# ------------------------------------------------------------------
+
 
 class TestMissionLifecycle:
 

@@ -15,6 +15,7 @@ sys.path.insert(0, os.path.dirname(__file__))
 # Part 3 — + Race Management
 # Part 4 — + Results
 # Part 5 — + Mission Planning
+# Part 6a — + Sponsorship
 # ----------------------------------------------------------------
 
 from registration.registration import (
@@ -49,6 +50,11 @@ from mission_planning.mission_planning import (
     assign_crew_member, remove_crew_member,
     start_mission, complete_mission, fail_mission,
     check_roles_available,
+)
+from sponsorship.sponsorship import (
+    add_sponsor, get_sponsor, list_sponsors,
+    claim_win_bonus, deactivate_sponsor,
+    reactivate_sponsor, get_sponsorship_summary,
 )
 
 
@@ -95,11 +101,10 @@ def menu_registration():
             print(f"\n  {'✓' if result['success'] else '✗'} {result['message']}")
 
         elif choice == "2":
-            mid = get_input("Enter member ID (e.g. M001)")
-            result = get_member(mid)
+            result = get_member(get_input("Member ID (e.g. M001)"))
             if result["success"]:
                 m = result["member"]
-                print(f"\n  ID     : {mid}")
+                print(f"\n  ID     : {get_input.__doc__}")
                 print(f"  Name   : {m['name']}")
                 print(f"  Role   : {m['role']}")
                 print(f"  Skill  : {m['skill_level']}")
@@ -118,13 +123,11 @@ def menu_registration():
                     print(f"  {m['id']:<8} {m['name']:<20} {m['role']:<12} {m['skill_level']:<7} {m['status']}")
 
         elif choice == "4":
-            mid = get_input("Enter member ID to deactivate")
-            result = deactivate_member(mid)
+            result = deactivate_member(get_input("Member ID to deactivate"))
             print(f"\n  {'✓' if result['success'] else '✗'} {result['message']}")
 
         elif choice == "5":
-            mid = get_input("Enter member ID to reactivate")
-            result = reactivate_member(mid)
+            result = reactivate_member(get_input("Member ID to reactivate"))
             print(f"\n  {'✓' if result['success'] else '✗'} {result['message']}")
 
         elif choice == "0":
@@ -152,32 +155,28 @@ def menu_crew_management():
         choice = get_input("Choose option")
 
         if choice == "1":
-            mid = get_input("Enter member ID")
+            mid = get_input("Member ID")
             print("  Roles: driver | mechanic | strategist | scout | trainer")
-            role = get_input("Enter new role")
-            result = assign_role(mid, role)
+            result = assign_role(mid, get_input("New role"))
             print(f"\n  {'✓' if result['success'] else '✗'} {result['message']}")
 
         elif choice == "2":
-            mid = get_input("Enter member ID")
-            result = get_role(mid)
+            result = get_role(get_input("Member ID"))
             if result["success"]:
                 print(f"\n  Role: {result['role']}")
             else:
                 print(f"\n  ✗ {result['message']}")
 
         elif choice == "3":
-            mid = get_input("Enter member ID")
-            level = get_input("Enter skill level (1-10)")
+            mid = get_input("Member ID")
             try:
-                result = set_skill_level(mid, int(level))
+                result = set_skill_level(mid, int(get_input("Skill level (1-10)")))
                 print(f"\n  {'✓' if result['success'] else '✗'} {result['message']}")
             except ValueError:
-                print("\n  ✗ Skill level must be a number.")
+                print("\n  ✗ Must be a number.")
 
         elif choice == "4":
-            mid = get_input("Enter member ID")
-            result = get_skill_level(mid)
+            result = get_skill_level(get_input("Member ID"))
             if result["success"]:
                 print(f"\n  Skill level: {result['skill_level']}")
             else:
@@ -185,12 +184,11 @@ def menu_crew_management():
 
         elif choice == "5":
             print("  Roles: driver | mechanic | strategist | scout | trainer")
-            role = get_input("Enter role to filter by")
-            result = list_members_by_role(role)
+            result = list_members_by_role(get_input("Role to filter by"))
             if not result["success"]:
                 print(f"\n  ✗ {result['message']}")
             elif not result["members"]:
-                print(f"\n  No active members with role '{role}'.")
+                print("\n  No active members with that role.")
             else:
                 print(f"\n  {'ID':<8} {'Name':<20} {'Skill'}")
                 print("  " + "-" * 35)
@@ -209,7 +207,7 @@ def menu_crew_management():
 
         elif choice == "7":
             print("  Roles: driver | mechanic | strategist | scout | trainer")
-            role = get_input("Enter role to check")
+            role = get_input("Role to check")
             available = has_available_role(role)
             print(f"\n  Role '{role}': {'✓ Available' if available else '✗ Not available'}")
 
@@ -253,12 +251,10 @@ def menu_inventory():
             print(f"\n  {'✓' if result['success'] else '✗'} {result['message']}")
 
         elif choice == "2":
-            cid = get_input("Enter car ID (e.g. C001)")
-            result = get_car(cid)
+            result = get_car(get_input("Car ID (e.g. C001)"))
             if result["success"]:
                 c = result["car"]
-                print(f"\n  ID        : {cid}")
-                print(f"  Name      : {c['name']}")
+                print(f"\n  Name      : {c['name']}")
                 print(f"  Condition : {c['condition']}")
                 print(f"  Assigned  : {c['assigned']}")
             else:
@@ -275,22 +271,17 @@ def menu_inventory():
                     print(f"  {c['id']:<8} {c['name']:<20} {c['condition']:<14} {c['assigned']}")
 
         elif choice == "4":
-            available = get_available_cars()
-            if not available:
-                print("\n  No cars available.")
-            else:
-                print(f"\n  Available: {', '.join(available)}")
+            ids = get_available_cars()
+            print(f"\n  Available: {', '.join(ids) if ids else 'none'}")
 
         elif choice == "5":
-            cid = get_input("Enter car ID")
+            cid = get_input("Car ID")
             print("  Conditions: good | damaged | under_repair")
-            cond = get_input("New condition")
-            result = update_car_condition(cid, cond)
+            result = update_car_condition(cid, get_input("New condition"))
             print(f"\n  {'✓' if result['success'] else '✗'} {result['message']}")
 
         elif choice == "6":
-            cid = get_input("Enter car ID to remove")
-            result = remove_car(cid)
+            result = remove_car(get_input("Car ID to remove"))
             print(f"\n  {'✓' if result['success'] else '✗'} {result['message']}")
 
         elif choice == "7":
@@ -550,16 +541,16 @@ def menu_results():
 def menu_mission_planning():
     while True:
         print_menu("MISSION PLANNING", {
-            "1" : "Create mission",
-            "2" : "View mission by ID",
-            "3" : "List all missions",
-            "4" : "Assign crew member to mission",
-            "5" : "Remove crew member from mission",
-            "6" : "Start mission",
-            "7" : "Complete mission",
-            "8" : "Fail mission",
-            "9" : "Check roles available",
-            "0" : "Back",
+            "1": "Create mission",
+            "2": "View mission by ID",
+            "3": "List all missions",
+            "4": "Assign crew member",
+            "5": "Remove crew member",
+            "6": "Start mission",
+            "7": "Complete mission",
+            "8": "Fail mission",
+            "9": "Check roles available",
+            "0": "Back",
         })
         choice = get_input("Choose option")
 
@@ -596,15 +587,11 @@ def menu_mission_planning():
                           f"{m['status']:<12} {len(m['assigned_crew'])}")
 
         elif choice == "4":
-            mid_m = get_input("Mission ID")
-            mid_c = get_input("Crew member ID")
-            result = assign_crew_member(mid_m, mid_c)
+            result = assign_crew_member(get_input("Mission ID"), get_input("Crew member ID"))
             print(f"\n  {'✓' if result['success'] else '✗'} {result['message']}")
 
         elif choice == "5":
-            mid_m = get_input("Mission ID")
-            mid_c = get_input("Crew member ID to remove")
-            result = remove_crew_member(mid_m, mid_c)
+            result = remove_crew_member(get_input("Mission ID"), get_input("Crew member ID"))
             print(f"\n  {'✓' if result['success'] else '✗'} {result['message']}")
 
         elif choice == "6":
@@ -640,6 +627,95 @@ def menu_mission_planning():
 
 
 # ----------------------------------------------------------------
+# SPONSORSHIP MENU
+# ----------------------------------------------------------------
+
+def menu_sponsorship():
+    while True:
+        print_menu("SPONSORSHIP", {
+            "1": "Add sponsor",
+            "2": "View sponsor by ID",
+            "3": "List all sponsors",
+            "4": "Claim win bonus",
+            "5": "Deactivate sponsor",
+            "6": "Reactivate sponsor",
+            "7": "Sponsorship summary",
+            "0": "Back",
+        })
+        choice = get_input("Choose option")
+
+        if choice == "1":
+            name = get_input("Sponsor name")
+            print("  Tiers: bronze ($500 seed, $100/win) | silver ($1500, $300/win) | gold ($5000, $1000/win)")
+            tier = get_input("Tier")
+            driver_id = get_input("Sponsored driver ID (leave blank for any winner)") or None
+            seed = get_input("Custom seed money (leave blank for tier default)") or None
+            bonus = get_input("Custom bonus per win (leave blank for tier default)") or None
+            try:
+                seed  = float(seed)  if seed  else None
+                bonus = float(bonus) if bonus else None
+            except ValueError:
+                print("\n  ✗ Seed/bonus must be numbers.")
+                continue
+            result = add_sponsor(name, tier, driver_id, seed, bonus)
+            print(f"\n  {'✓' if result['success'] else '✗'} {result['message']}")
+
+        elif choice == "2":
+            result = get_sponsor(get_input("Sponsor ID (e.g. SP001)"))
+            if result["success"]:
+                s = result["sponsor"]
+                print(f"\n  Name        : {s['name']}")
+                print(f"  Tier        : {s['tier']}")
+                print(f"  Seed money  : ${s['seed_money']:.2f}")
+                print(f"  Bonus/win   : ${s['bonus_per_win']:.2f}")
+                print(f"  Driver      : {s['sponsored_driver_id'] or 'any winner'}")
+                print(f"  Status      : {s['status']}")
+                print(f"  Total paid  : ${s['total_paid']:.2f}")
+            else:
+                print(f"\n  ✗ {result['message']}")
+
+        elif choice == "3":
+            sponsors = list_sponsors()["sponsors"]
+            if not sponsors:
+                print("\n  No sponsors yet.")
+            else:
+                print(f"\n  {'ID':<8} {'Name':<20} {'Tier':<8} {'Status':<10} {'Total Paid'}")
+                print("  " + "-" * 55)
+                for s in sponsors:
+                    print(f"  {s['id']:<8} {s['name']:<20} {s['tier']:<8} "
+                          f"{s['status']:<10} ${s['total_paid']:.2f}")
+
+        elif choice == "4":
+            sid = get_input("Sponsor ID")
+            rid = get_input("Race ID")
+            result = claim_win_bonus(sid, rid)
+            print(f"\n  {'✓' if result['success'] else '✗'} {result['message']}")
+
+        elif choice == "5":
+            result = deactivate_sponsor(get_input("Sponsor ID to deactivate"))
+            print(f"\n  {'✓' if result['success'] else '✗'} {result['message']}")
+
+        elif choice == "6":
+            result = reactivate_sponsor(get_input("Sponsor ID to reactivate"))
+            print(f"\n  {'✓' if result['success'] else '✗'} {result['message']}")
+
+        elif choice == "7":
+            s = get_sponsorship_summary()
+            print(f"\n  Total contributed: ${s['total_contributed']:.2f}")
+            print(f"  Sponsors ({len(s['sponsors'])}):")
+            if not s["sponsors"]:
+                print("    None")
+            else:
+                for sp in s["sponsors"]:
+                    print(f"    {sp['id']} — {sp['name']} ({sp['tier']}) — ${sp['total_paid']:.2f}")
+
+        elif choice == "0":
+            break
+        else:
+            print("\n  Invalid option. Try again.")
+
+
+# ----------------------------------------------------------------
 # MAIN MENU
 # ----------------------------------------------------------------
 
@@ -656,6 +732,7 @@ def main():
             "4": "Race Management",
             "5": "Results",
             "6": "Mission Planning",
+            "7": "Sponsorship",
             "0": "Exit",
         })
         choice = get_input("Choose module")
@@ -672,6 +749,8 @@ def main():
             menu_results()
         elif choice == "6":
             menu_mission_planning()
+        elif choice == "7":
+            menu_sponsorship()
         elif choice == "0":
             print("\n  Goodbye. Stay off the radar.\n")
             sys.exit(0)
