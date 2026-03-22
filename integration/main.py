@@ -12,6 +12,7 @@ sys.path.insert(0, os.path.dirname(__file__))
 # Integrated modules:
 # Part 1 — Registration + Crew Management
 # Part 2 — + Inventory
+# Part 3 — + Race Management
 # ----------------------------------------------------------------
 
 from registration.registration import (
@@ -30,6 +31,12 @@ from inventory.inventory import (
     add_tools, use_tools, get_parts_and_tools,
     add_cash, deduct_cash, get_cash_balance,
     get_inventory_summary,
+)
+from race_management.race_management import (
+    create_race, get_race, list_races,
+    enter_driver, assign_car, start_race,
+    complete_race, get_race_drivers, get_race_cars,
+    list_available_drivers, list_available_cars,
 )
 
 
@@ -355,6 +362,115 @@ def menu_inventory():
 
 
 # ----------------------------------------------------------------
+# RACE MANAGEMENT MENU
+# ----------------------------------------------------------------
+
+def menu_race_management():
+    while True:
+        print_menu("RACE MANAGEMENT", {
+            "1": "Create race",
+            "2": "View race by ID",
+            "3": "List all races",
+            "4": "Enter driver into race",
+            "5": "Assign car to race",
+            "6": "Start race",
+            "7": "Complete race",
+            "8": "View race drivers",
+            "9": "View race cars",
+            "10": "List available drivers",
+            "11": "List available cars",
+            "0": "Back",
+        })
+        choice = get_input("Choose option")
+
+        if choice == "1":
+            name = get_input("Race name")
+            result = create_race(name)
+            print(f"\n  {'✓' if result['success'] else '✗'} {result['message']}")
+
+        elif choice == "2":
+            rid = get_input("Enter race ID (e.g. R001)")
+            result = get_race(rid)
+            if result["success"]:
+                r = result["race"]
+                print(f"\n  Name    : {r['name']}")
+                print(f"  Status  : {r['status']}")
+                print(f"  Drivers : {r['driver_ids'] or 'none'}")
+                print(f"  Cars    : {r['car_ids'] or 'none'}")
+            else:
+                print(f"\n  ✗ {result['message']}")
+
+        elif choice == "3":
+            result = list_races()
+            races = result["races"]
+            if not races:
+                print("\n  No races created yet.")
+            else:
+                print(f"\n  {'ID':<8} {'Name':<20} {'Status':<12} {'Drivers':<10} {'Cars'}")
+                print("  " + "-" * 58)
+                for r in races:
+                    print(f"  {r['id']:<8} {r['name']:<20} {r['status']:<12} "
+                          f"{len(r['driver_ids']):<10} {len(r['car_ids'])}")
+
+        elif choice == "4":
+            rid = get_input("Race ID")
+            mid = get_input("Driver member ID")
+            result = enter_driver(rid, mid)
+            print(f"\n  {'✓' if result['success'] else '✗'} {result['message']}")
+
+        elif choice == "5":
+            rid = get_input("Race ID")
+            cid = get_input("Car ID")
+            result = assign_car(rid, cid)
+            print(f"\n  {'✓' if result['success'] else '✗'} {result['message']}")
+
+        elif choice == "6":
+            rid = get_input("Race ID to start")
+            result = start_race(rid)
+            print(f"\n  {'✓' if result['success'] else '✗'} {result['message']}")
+
+        elif choice == "7":
+            rid = get_input("Race ID to complete")
+            result = complete_race(rid)
+            print(f"\n  {'✓' if result['success'] else '✗'} {result['message']}")
+
+        elif choice == "8":
+            rid = get_input("Race ID")
+            result = get_race_drivers(rid)
+            if result["success"]:
+                print(f"\n  Drivers in race: {result['driver_ids'] or 'none'}")
+            else:
+                print(f"\n  ✗ {result['message']}")
+
+        elif choice == "9":
+            rid = get_input("Race ID")
+            result = get_race_cars(rid)
+            if result["success"]:
+                print(f"\n  Cars in race: {result['car_ids'] or 'none'}")
+            else:
+                print(f"\n  ✗ {result['message']}")
+
+        elif choice == "10":
+            result = list_available_drivers()
+            if not result["driver_ids"]:
+                print("\n  No available drivers.")
+            else:
+                print(f"\n  Available drivers: {', '.join(result['driver_ids'])}")
+
+        elif choice == "11":
+            result = list_available_cars()
+            if not result["car_ids"]:
+                print("\n  No available cars.")
+            else:
+                print(f"\n  Available cars: {', '.join(result['car_ids'])}")
+
+        elif choice == "0":
+            break
+        else:
+            print("\n  Invalid option. Try again.")
+
+
+# ----------------------------------------------------------------
 # MAIN MENU
 # ----------------------------------------------------------------
 
@@ -368,6 +484,7 @@ def main():
             "1": "Registration",
             "2": "Crew Management",
             "3": "Inventory",
+            "4": "Race Management",
             "0": "Exit",
         })
         choice = get_input("Choose module")
@@ -378,6 +495,8 @@ def main():
             menu_crew_management()
         elif choice == "3":
             menu_inventory()
+        elif choice == "4":
+            menu_race_management()
         elif choice == "0":
             print("\n  Goodbye. Stay off the radar.\n")
             sys.exit(0)

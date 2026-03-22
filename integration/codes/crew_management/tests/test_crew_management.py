@@ -29,17 +29,13 @@ def clean_db():
     reset_database()
 
 
-# ------------------------------------------------------------------
-# Helpers
-# ------------------------------------------------------------------
 
 def _reg(name, role):
     return register_member(name, role)
 
 
-# ------------------------------------------------------------------
 # assign_role
-# ------------------------------------------------------------------
+
 
 class TestAssignRole:
 
@@ -87,9 +83,8 @@ class TestAssignRole:
         assert get_role(mid)["role"] == "driver"
 
 
-# ------------------------------------------------------------------
 # get_role
-# ------------------------------------------------------------------
+
 
 class TestGetRole:
 
@@ -164,9 +159,8 @@ class TestAvailableHelpers:
         assert get_available_mechanics() == []
 
 
-# ------------------------------------------------------------------
 # has_available_role
-# ------------------------------------------------------------------
+
 
 class TestHasAvailableRole:
 
@@ -183,9 +177,8 @@ class TestHasAvailableRole:
         assert has_available_role("mechanic") is False
 
 
-# ------------------------------------------------------------------
 # set_skill_level
-# ------------------------------------------------------------------
+
 
 class TestSetSkillLevel:
 
@@ -226,9 +219,8 @@ class TestSetSkillLevel:
         assert result["success"] is False
 
 
-# ------------------------------------------------------------------
 # increase_skill
-# ------------------------------------------------------------------
+
 
 class TestIncreaseSkill:
 
@@ -274,9 +266,8 @@ class TestIncreaseSkill:
         assert result["success"] is False
 
 
-# ------------------------------------------------------------------
 # get_skill_level
-# ------------------------------------------------------------------
+
 
 class TestGetSkillLevel:
 
@@ -297,10 +288,8 @@ class TestGetSkillLevel:
         assert result["success"] is False
         assert result["skill_level"] is None
 
-
-# ------------------------------------------------------------------
 # get_crew_summary
-# ------------------------------------------------------------------
+
 
 class TestGetCrewSummary:
 

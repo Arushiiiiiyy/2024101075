@@ -9,17 +9,12 @@ from shared.database import (
 from registration.registration import is_registered
 
 
-# ------------------------------------------------------------------
-# CONSTANTS
-# ------------------------------------------------------------------
 
 SKILL_MIN = 1
 SKILL_MAX = 10
 
-
-# ------------------------------------------------------------------
 # ROLE MANAGEMENT
-# ------------------------------------------------------------------
+
 
 def assign_role(member_id: str, new_role: str) -> dict:
     """

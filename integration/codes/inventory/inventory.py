@@ -9,9 +9,8 @@ from shared.database import (
 )
 
 
-# ------------------------------------------------------------------
 # CAR MANAGEMENT
-# ------------------------------------------------------------------
+
 
 def add_car(name: str, condition: str = "good") -> dict:
     """
@@ -183,9 +182,8 @@ def remove_car(car_id: str) -> dict:
     return {"success": True, "message": f"Car '{name}' (ID: {car_id}) removed from inventory."}
 
 
-# ------------------------------------------------------------------
 # SPARE PARTS & TOOLS
-# ------------------------------------------------------------------
+
 
 def add_spare_parts(amount: int) -> dict:
     """
@@ -384,9 +382,7 @@ def get_inventory_summary() -> dict:
     }
 
 
-# ------------------------------------------------------------------
-# HELPERS
-# ------------------------------------------------------------------
+
 
 def _fail(message: str) -> dict:
     return {"success": False, "message": message}
