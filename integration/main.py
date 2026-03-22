@@ -1,9 +1,6 @@
 # main.py
 # StreetRace Manager — Command Line Interface
-# Grow this file as each integration part is completed.
-#
-# Run from integration/ folder with:
-# PYTHONPATH=codes:. python main.py
+# Run from integration/ folder with: python main.py
 
 import sys
 import os
@@ -11,22 +8,28 @@ import os
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "codes"))
 sys.path.insert(0, os.path.dirname(__file__))
 
+# ----------------------------------------------------------------
+# Integrated modules:
+# Part 1 — Registration + Crew Management
+# Part 2 — + Inventory
+# ----------------------------------------------------------------
 
 from registration.registration import (
-    register_member,
-    deactivate_member,
-    reactivate_member,
-    list_members,
-    get_member,
+    register_member, deactivate_member,
+    reactivate_member, list_members, get_member,
 )
 from crew_management.crew_management import (
-    assign_role,
-    get_role,
-    set_skill_level,
-    get_skill_level,
-    get_crew_summary,
-    list_members_by_role,
-    has_available_role,
+    assign_role, get_role, set_skill_level,
+    get_skill_level, get_crew_summary,
+    list_members_by_role, has_available_role,
+)
+from inventory.inventory import (
+    add_car, get_car, list_cars, get_available_cars,
+    update_car_condition, remove_car,
+    add_spare_parts, use_spare_parts,
+    add_tools, use_tools, get_parts_and_tools,
+    add_cash, deduct_cash, get_cash_balance,
+    get_inventory_summary,
 )
 
 
@@ -49,6 +52,10 @@ def get_input(prompt):
     return input(f"  >> {prompt}: ").strip()
 
 
+# ----------------------------------------------------------------
+# REGISTRATION MENU
+# ----------------------------------------------------------------
+
 def menu_registration():
     while True:
         print_menu("REGISTRATION", {
@@ -57,7 +64,7 @@ def menu_registration():
             "3": "List all crew members",
             "4": "Deactivate crew member",
             "5": "Reactivate crew member",
-            "0": "Back to main menu",
+            "0": "Back",
         })
         choice = get_input("Choose option")
 
@@ -108,6 +115,9 @@ def menu_registration():
             print("\n  Invalid option. Try again.")
 
 
+# ----------------------------------------------------------------
+# CREW MANAGEMENT MENU
+# ----------------------------------------------------------------
 
 def menu_crew_management():
     while True:
@@ -119,7 +129,7 @@ def menu_crew_management():
             "5": "List members by role",
             "6": "View full crew summary",
             "7": "Check if role is available",
-            "0": "Back to main menu",
+            "0": "Back",
         })
         choice = get_input("Choose option")
 
@@ -184,8 +194,7 @@ def menu_crew_management():
             print("  Roles: driver | mechanic | strategist | scout | trainer")
             role = get_input("Enter role to check")
             available = has_available_role(role)
-            status = "✓ Available" if available else "✗ Not available"
-            print(f"\n  Role '{role}': {status}")
+            print(f"\n  Role '{role}': {'✓ Available' if available else '✗ Not available'}")
 
         elif choice == "0":
             break
@@ -193,7 +202,161 @@ def menu_crew_management():
             print("\n  Invalid option. Try again.")
 
 
+# ----------------------------------------------------------------
+# INVENTORY MENU
+# ----------------------------------------------------------------
 
+def menu_inventory():
+    while True:
+        print_menu("INVENTORY", {
+            "1" : "Add car",
+            "2" : "View car by ID",
+            "3" : "List all cars",
+            "4" : "List available cars",
+            "5" : "Update car condition",
+            "6" : "Remove car",
+            "7" : "Add spare parts",
+            "8" : "Use spare parts",
+            "9" : "Add tools",
+            "10": "Use tools",
+            "11": "View parts & tools",
+            "12": "Add cash",
+            "13": "Deduct cash",
+            "14": "View cash balance",
+            "15": "Full inventory summary",
+            "0" : "Back",
+        })
+        choice = get_input("Choose option")
+
+        if choice == "1":
+            name = get_input("Car name")
+            print("  Conditions: good | damaged | under_repair")
+            cond = get_input("Condition (default: good)") or "good"
+            result = add_car(name, cond)
+            print(f"\n  {'✓' if result['success'] else '✗'} {result['message']}")
+
+        elif choice == "2":
+            cid = get_input("Enter car ID (e.g. C001)")
+            result = get_car(cid)
+            if result["success"]:
+                c = result["car"]
+                print(f"\n  ID        : {cid}")
+                print(f"  Name      : {c['name']}")
+                print(f"  Condition : {c['condition']}")
+                print(f"  Assigned  : {c['assigned']}")
+            else:
+                print(f"\n  ✗ {result['message']}")
+
+        elif choice == "3":
+            result = list_cars()
+            cars = result["cars"]
+            if not cars:
+                print("\n  No cars in inventory.")
+            else:
+                print(f"\n  {'ID':<8} {'Name':<20} {'Condition':<14} {'Assigned'}")
+                print("  " + "-" * 50)
+                for c in cars:
+                    print(f"  {c['id']:<8} {c['name']:<20} {c['condition']:<14} {c['assigned']}")
+
+        elif choice == "4":
+            available = get_available_cars()
+            if not available:
+                print("\n  No cars available (good + unassigned).")
+            else:
+                print(f"\n  Available car IDs: {', '.join(available)}")
+
+        elif choice == "5":
+            cid = get_input("Enter car ID")
+            print("  Conditions: good | damaged | under_repair")
+            cond = get_input("New condition")
+            result = update_car_condition(cid, cond)
+            print(f"\n  {'✓' if result['success'] else '✗'} {result['message']}")
+
+        elif choice == "6":
+            cid = get_input("Enter car ID to remove")
+            result = remove_car(cid)
+            print(f"\n  {'✓' if result['success'] else '✗'} {result['message']}")
+
+        elif choice == "7":
+            try:
+                amt = int(get_input("How many spare parts to add"))
+                result = add_spare_parts(amt)
+                print(f"\n  {'✓' if result['success'] else '✗'} {result['message']}")
+            except ValueError:
+                print("\n  ✗ Must be a number.")
+
+        elif choice == "8":
+            try:
+                amt = int(get_input("How many spare parts to use"))
+                result = use_spare_parts(amt)
+                print(f"\n  {'✓' if result['success'] else '✗'} {result['message']}")
+            except ValueError:
+                print("\n  ✗ Must be a number.")
+
+        elif choice == "9":
+            try:
+                amt = int(get_input("How many tools to add"))
+                result = add_tools(amt)
+                print(f"\n  {'✓' if result['success'] else '✗'} {result['message']}")
+            except ValueError:
+                print("\n  ✗ Must be a number.")
+
+        elif choice == "10":
+            try:
+                amt = int(get_input("How many tools to use"))
+                result = use_tools(amt)
+                print(f"\n  {'✓' if result['success'] else '✗'} {result['message']}")
+            except ValueError:
+                print("\n  ✗ Must be a number.")
+
+        elif choice == "11":
+            pt = get_parts_and_tools()
+            print(f"\n  Spare Parts : {pt['spare_parts']}")
+            print(f"  Tools       : {pt['tools']}")
+
+        elif choice == "12":
+            try:
+                amt = float(get_input("Amount to add ($)"))
+                result = add_cash(amt)
+                print(f"\n  {'✓' if result['success'] else '✗'} {result['message']}")
+            except ValueError:
+                print("\n  ✗ Must be a number.")
+
+        elif choice == "13":
+            try:
+                amt = float(get_input("Amount to deduct ($)"))
+                result = deduct_cash(amt)
+                print(f"\n  {'✓' if result['success'] else '✗'} {result['message']}")
+            except ValueError:
+                print("\n  ✗ Must be a number.")
+
+        elif choice == "14":
+            bal = get_cash_balance()
+            print(f"\n  Cash Balance: ${bal['cash_balance']:.2f}")
+
+        elif choice == "15":
+            s = get_inventory_summary()
+            print(f"\n  Cash Balance : ${s['cash_balance']:.2f}")
+            print(f"  Spare Parts  : {s['spare_parts']}")
+            print(f"  Tools        : {s['tools']}")
+            print(f"\n  Cars ({len(s['cars'])}):")
+            if not s["cars"]:
+                print("    None")
+            else:
+                print(f"  {'ID':<8} {'Name':<20} {'Condition':<14} {'Assigned'}")
+                print("  " + "-" * 50)
+                for c in s["cars"]:
+                    print(f"  {c['id']:<8} {c['name']:<20} {c['condition']:<14} {c['assigned']}")
+
+        elif choice == "0":
+            break
+        else:
+            print("\n  Invalid option. Try again.")
+
+
+# ----------------------------------------------------------------
+# MAIN MENU
+# ----------------------------------------------------------------
 
 def main():
     print("\n" + "=" * 50)
@@ -204,6 +367,7 @@ def main():
         print_menu("MAIN MENU", {
             "1": "Registration",
             "2": "Crew Management",
+            "3": "Inventory",
             "0": "Exit",
         })
         choice = get_input("Choose module")
@@ -212,6 +376,8 @@ def main():
             menu_registration()
         elif choice == "2":
             menu_crew_management()
+        elif choice == "3":
+            menu_inventory()
         elif choice == "0":
             print("\n  Goodbye. Stay off the radar.\n")
             sys.exit(0)
