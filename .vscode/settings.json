@@ -1,5 +1,6 @@
 {
     "python.analysis.extraPaths": [
-        "./whitebox/moneypoly"
+        "./whitebox/moneypoly",
+        "./integration/codes"
     ]
 }

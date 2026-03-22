@@ -139,9 +139,6 @@ def has_available_role(role: str) -> bool:
     )
 
 
-# ------------------------------------------------------------------
-# SKILL MANAGEMENT
-# ------------------------------------------------------------------
 
 def set_skill_level(member_id: str, skill_level: int) -> dict:
     """
@@ -245,9 +242,6 @@ def get_crew_summary() -> dict:
     return {"success": True, "summary": summary}
 
 
-# ------------------------------------------------------------------
-# HELPERS
-# ------------------------------------------------------------------
 
 def _fail(message: str) -> dict:
     return {"success": False, "message": message}
