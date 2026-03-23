@@ -294,14 +294,12 @@ def test_menu_unmortgage_success_branch(monkeypatch):
 def test_check_bankruptcy_index_wrap_around():
     """Branch: self.state.current_index >= len(self.players) inside bankruptcy check."""
     game = Game(["A", "B", "C"])
-    # Set it so player C (index 2) is about to go bankrupt
     game.state.current_index = 2 
     player_c = game.players[2]
     player_c.balance = 0
     
     game._check_bankruptcy(player_c)
     
-    # Index should wrap back to 0 because the list shrank from 3 to 2
     assert game.state.current_index == 0
 
 def test_auction_property_bid_too_low(monkeypatch):
@@ -322,7 +320,7 @@ def test_auction_property_cannot_afford(monkeypatch):
     prop = game.board.get_property_at(1)
     game.players[0].balance = 50
     
-    # A tries to bid 100 but only has 50
+    
     bids = iter([100, 0])
     monkeypatch.setattr("moneypoly.ui.safe_int_input", lambda *_args, **_kwargs: next(bids))
     game.auction_property(prop)
@@ -337,7 +335,7 @@ def test_pay_rent_unowned_property():
     
     original_balance = player.balance
     game.pay_rent(player, prop)
-    assert player.balance == original_balance # No money lost
+    assert player.balance == original_balance 
 
 def test_unmortgage_property_wrong_owner():
     """Branch: prop.owner != player inside unmortgage -> return False."""
@@ -348,3 +346,56 @@ def test_unmortgage_property_wrong_owner():
     prop.is_mortgaged = True
     
     assert game.unmortgage_property(other, prop) is False
+
+
+def test_menus_ignore_out_of_bounds_selections(monkeypatch):
+    """Branch: index is not within the 0 to len() bounds for mortgage menus."""
+    game = Game(["Alice"])
+    p1 = game.players[0]
+    dummy_prop = game.board.get_property_at(1)
+    dummy_prop.owner = p1
+    p1.add_property(dummy_prop)
+    
+    monkeypatch.setattr("moneypoly.ui.safe_int_input", lambda *_args, **_kwargs: 500)
+    
+    # If the out-of-bounds guard fails, these will throw IndexError crashes
+    game._menu_mortgage(p1)
+    game._menu_unmortgage(p1)
+    game._menu_trade(p1)
+    
+    assert dummy_prop.is_mortgaged is False
+
+def test_interactive_menu_rejects_negative_loan(monkeypatch):
+    """Branch: amount <= 0 inside interactive_menu option 6."""
+    game = Game(["Bob"])
+    p1 = game.players[0]
+    initial_cash = p1.balance
+
+    user_inputs = iter([6, -500, 0])
+    monkeypatch.setattr("moneypoly.ui.safe_int_input", lambda *_args, **_kwargs: next(user_inputs))
+    
+    game.interactive_menu(p1)
+    
+    # Balance must remain exactly the same
+    assert p1.balance == initial_cash
+
+def test_game_loop_terminates_on_max_turns_limit(monkeypatch, capsys):
+    """Branch: while loop terminates because turn_number >= MAX_TURNS."""
+    from moneypoly.config import MAX_TURNS
+    game = Game(["P1", "P2"])
+    game.state.turn_number = MAX_TURNS
+    monkeypatch.setattr("moneypoly.ui.print_banner", lambda *args: None)
+    
+    game.run()
+    
+    output = capsys.readouterr().out
+    assert "wins with a net worth" in output
+
+def test_bankruptcy_avoids_crash_if_player_already_removed():
+    """Branch: if player in self.players evaluates to False during bankruptcy."""
+    game = Game(["Ghost"])
+    ghost_player = game.players[0]
+    ghost_player.balance = 0
+    game.players.clear()
+    game._check_bankruptcy(ghost_player)
+    assert ghost_player.is_eliminated is True

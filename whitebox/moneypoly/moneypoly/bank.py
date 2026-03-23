@@ -45,6 +45,10 @@ class Bank:
         """
         if amount <= 0:
             return
+        if amount > self._funds:
+            raise ValueError(
+                f"Bank cannot issue loan of ${amount}; only ${self._funds} available."
+            )
         player.add_money(amount)
         self._funds -= amount 
         self._loans_issued.append((player.name, amount))

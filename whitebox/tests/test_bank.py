@@ -43,3 +43,9 @@ def test_bank_collect_ignores_negative_amounts():
 
     assert bank.get_balance() == starting_funds
 
+def test_give_loan_respects_available_funds():
+    """Bank should not issue loans exceeding available reserves."""
+    bank = Bank()
+    player = Player("Borrower")
+    with pytest.raises(ValueError):
+        bank.give_loan(player, bank.get_balance() + 1)
