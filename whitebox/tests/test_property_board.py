@@ -2,8 +2,8 @@
 
 from moneypoly.board import Board
 from moneypoly.player import Player
-from moneypoly.property import PropertyGroup
 
+from moneypoly.property import PropertyGroup, Property, PropertyConfig
 from test_helpers import make_property
 
 
@@ -87,3 +87,21 @@ def test_board_special_tile_and_ownership_lists():
     assert board.is_special_tile(1) is False
     assert board.properties_owned_by(owner) == [prop]
     assert prop not in board.unowned_properties()
+
+
+def test_property_init_without_group():
+    """Branch: group is None during Property initialization."""
+    prop = Property("Orphan", 99, PropertyConfig(100, 10))
+    assert prop.group is None
+    assert prop.get_rent() == 10 # Should not crash looking for group multiplier
+
+def test_property_group_all_owned_by_none():
+    """Branch: player is None -> return False."""
+    group = PropertyGroup("Test", "black")
+    prop = Property("P1", 1, PropertyConfig(100, 10), group)
+    assert group.all_owned_by(None) is False
+
+def test_board_is_purchasable_none_property():
+    """Branch: prop is None -> return False."""
+    board = Board()
+    assert board.is_purchasable(99) is False # Pos 99 does not exist

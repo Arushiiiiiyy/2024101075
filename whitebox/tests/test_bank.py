@@ -42,3 +42,4 @@ def test_bank_collect_ignores_negative_amounts():
     bank.collect(-100)
 
     assert bank.get_balance() == starting_funds
+

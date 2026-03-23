@@ -235,3 +235,116 @@ def test_play_turn_sends_player_to_jail_after_three_consecutive_doubles():
     assert player.jail.in_jail is True
     move_and_resolve.assert_not_called()
     advance_turn.assert_called_once()
+
+def test_interactive_menu_exits_on_zero():
+    """Branch: choice == 0 breaks the while True loop."""
+    game = Game(["P1", "P2"])
+    player = game.players[0]
+    
+    with patch("moneypoly.ui.safe_int_input", return_value=0):
+        # If the loop doesn't break, this will hang indefinitely
+        game.interactive_menu(player)
+
+def test_interactive_menu_routing(monkeypatch):
+    """Branch: covers routing to standings, board ownership, and loans."""
+    game = Game(["P1", "P2"])
+    player = game.players[0]
+    
+    # Simulate choosing 1, 2, 6, loan amount 500, then 0 to exit
+    inputs = iter([1, 2, 6, 500, 0])
+    monkeypatch.setattr("moneypoly.ui.safe_int_input", lambda *_args, **_kwargs: next(inputs))
+    
+    with patch("moneypoly.ui.print_standings") as mock_standings, \
+         patch("moneypoly.ui.print_board_ownership") as mock_board, \
+         patch.object(game.bank, "give_loan") as mock_loan:
+         
+        game.interactive_menu(player)
+        
+        mock_standings.assert_called_once()
+        mock_board.assert_called_once()
+        mock_loan.assert_called_once_with(player, 500)
+
+def test_menu_mortgage_no_properties_branch(capsys):
+    """Branch: early return if player has no mortgageable properties."""
+    game = Game(["P1"])
+    player = game.players[0]
+    # Player has no properties
+    game._menu_mortgage(player)
+    assert "No properties available to mortgage." in capsys.readouterr().out
+
+def test_menu_unmortgage_success_branch(monkeypatch):
+    """Branch: successful selection and unmortgaging of a property."""
+    game = Game(["P1"])
+    player = game.players[0]
+    prop = game.board.get_property_at(1)
+    
+    # Setup: Player owns a mortgaged property
+    prop.owner = player
+    prop.is_mortgaged = True
+    player.add_property(prop)
+    player.balance = 5000 # Ensure they can afford it
+    
+    # Select option 1 (Fix: using a lambda instead of return_value)
+    monkeypatch.setattr("moneypoly.ui.safe_int_input", lambda *_args, **_kwargs: 1)
+    
+    with patch.object(game, "unmortgage_property") as mock_unmortgage:
+        game._menu_unmortgage(player)
+        mock_unmortgage.assert_called_once_with(player, prop)
+
+def test_check_bankruptcy_index_wrap_around():
+    """Branch: self.state.current_index >= len(self.players) inside bankruptcy check."""
+    game = Game(["A", "B", "C"])
+    # Set it so player C (index 2) is about to go bankrupt
+    game.state.current_index = 2 
+    player_c = game.players[2]
+    player_c.balance = 0
+    
+    game._check_bankruptcy(player_c)
+    
+    # Index should wrap back to 0 because the list shrank from 3 to 2
+    assert game.state.current_index == 0
+
+def test_auction_property_bid_too_low(monkeypatch):
+    """Branch: bid < min_required -> continue loop."""
+    game = Game(["A", "B"])
+    prop = game.board.get_property_at(1)
+    
+    # A bids 10, B tries to bid 15 (min raise is 10, so 20 required)
+    bids = iter([10, 15, 0, 0]) 
+    monkeypatch.setattr("moneypoly.ui.safe_int_input", lambda *_args, **_kwargs: next(bids))
+    game.auction_property(prop)
+    
+    assert prop.owner == game.players[0] # A wins because B's bid was rejected
+
+def test_auction_property_cannot_afford(monkeypatch):
+    """Branch: bid > player.balance -> continue loop."""
+    game = Game(["A", "B"])
+    prop = game.board.get_property_at(1)
+    game.players[0].balance = 50
+    
+    # A tries to bid 100 but only has 50
+    bids = iter([100, 0])
+    monkeypatch.setattr("moneypoly.ui.safe_int_input", lambda *_args, **_kwargs: next(bids))
+    game.auction_property(prop)
+    
+    assert prop.owner is None # A's bid rejected, property remains unowned
+
+def test_pay_rent_unowned_property():
+    """Branch: prop.owner is None -> early return."""
+    game = Game(["A"])
+    player = game.players[0]
+    prop = game.board.get_property_at(1) # Unowned by default
+    
+    original_balance = player.balance
+    game.pay_rent(player, prop)
+    assert player.balance == original_balance # No money lost
+
+def test_unmortgage_property_wrong_owner():
+    """Branch: prop.owner != player inside unmortgage -> return False."""
+    game = Game(["A", "B"])
+    owner, other = game.players
+    prop = game.board.get_property_at(1)
+    prop.owner = owner
+    prop.is_mortgaged = True
+    
+    assert game.unmortgage_property(other, prop) is False
