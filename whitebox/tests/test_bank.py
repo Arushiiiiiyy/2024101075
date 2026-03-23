@@ -33,3 +33,12 @@ def test_bank_collect_summary_and_repr(capsys):
     assert bank.loan_count() == 0
     assert bank.total_loans_issued() == 0
     assert "Bank(funds=" in repr(bank)
+
+def test_bank_collect_ignores_negative_amounts():
+    """Negative amounts passed to collect should not reduce bank funds."""
+    bank = Bank()
+    starting_funds = bank.get_balance()
+
+    bank.collect(-100)
+
+    assert bank.get_balance() == starting_funds
