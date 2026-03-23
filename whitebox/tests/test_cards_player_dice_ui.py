@@ -112,3 +112,11 @@ def test_ui_helpers_cover_formatting_and_input(monkeypatch, capsys):
 
     monkeypatch.setattr("builtins.input", lambda _prompt: "y")
     assert ui.confirm("?") is True
+
+
+def test_card_deck_empty_cards_remaining_and_repr():
+    """Empty deck should not crash on cards_remaining() or repr()."""
+    empty_deck = CardDeck([])
+
+    assert empty_deck.cards_remaining() == 0
+    assert "CardDeck(0 cards" in repr(empty_deck)

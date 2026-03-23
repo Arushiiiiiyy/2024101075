@@ -110,6 +110,8 @@ class CardDeck:
         self.index = 0
 
     def cards_remaining(self):
+        if not self.cards:               #no cards=0
+            return 0
         """Return how many cards remain before the deck cycles."""
         return len(self.cards) - (self.index % len(self.cards))
 
@@ -117,4 +119,6 @@ class CardDeck:
         return len(self.cards)
 
     def __repr__(self):
+        if not self.cards:               # 0 guard 
+            return "CardDeck(0 cards, next=0)"
         return f"CardDeck({len(self.cards)} cards, next={self.index % len(self.cards)})"
