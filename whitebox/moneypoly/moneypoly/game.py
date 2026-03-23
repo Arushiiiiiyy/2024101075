@@ -219,6 +219,9 @@ class Game:
         in exchange for `cash_amount` from `buyer`.
         Returns True on success.
         """
+        if buyer == seller:
+            print(f"  Trade failed: Cannot trade with yourself.")
+            return False
         if prop.owner != seller:
             print(f"  Trade failed: {seller.name} does not own {prop.name}.")
             return False

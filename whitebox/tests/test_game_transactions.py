@@ -158,3 +158,22 @@ def test_buy_property_rejects_already_owned_property():
     buyer.balance = 1000
     assert game.buy_property(buyer, prop) is False
     assert prop.owner == original_owner
+
+
+def test_trade_completes_property_group_immediate_rent_double():
+    """Edge Case: Trading a property instantly alters the rent calculations for the whole group."""
+    game = Game(["Tycoon", "Pauper"])
+    tycoon, pauper = game.players
+    group = game.board.groups["brown"]
+    p1, p2 = group.properties[0], group.properties[1] # Mediterranean & Baltic
+    p1.owner = tycoon; tycoon.add_property(p1)
+    p2.owner = pauper; pauper.add_property(p2)
+    
+    assert p1.get_rent() == p1.base_rent # Normal rent
+    
+    # Execute trade
+    game.trade(pauper, tycoon, p2, 0)
+    
+    # Rent should immediately reflect the FULL_GROUP_MULTIPLIER
+    assert p1.get_rent() == p1.base_rent * 2
+    assert p2.get_rent() == p2.base_rent * 2

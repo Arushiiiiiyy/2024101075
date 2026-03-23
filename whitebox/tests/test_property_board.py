@@ -105,3 +105,16 @@ def test_board_is_purchasable_none_property():
     """Branch: prop is None -> return False."""
     board = Board()
     assert board.is_purchasable(99) is False # Pos 99 does not exist
+
+def test_unmortgage_truncation_boundary():
+    """Boundary Case: Verifies int() truncation on 110% unmortgage cost."""
+    # If price is $101, mortgage is $50. Unmortgage is 50 * 1.1 = 55.0 -> 55
+    # If price is $103, mortgage is $51. Unmortgage is 51 * 1.1 = 56.1 -> 56
+    from moneypoly.property import Property, PropertyConfig
+    prop = Property("WeirdPrice", 99, PropertyConfig(103, 10))
+    
+    prop.mortgage()
+    assert prop.mortgage_value == 51
+    
+    cost = prop.unmortgage()
+    assert cost == 56

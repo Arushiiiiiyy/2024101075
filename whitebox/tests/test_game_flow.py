@@ -399,3 +399,83 @@ def test_bankruptcy_avoids_crash_if_player_already_removed():
     game.players.clear()
     game._check_bankruptcy(ghost_player)
     assert ghost_player.is_eliminated is True
+
+def test_card_collect_from_all_strict_boundaries():
+    """Branch Boundary: other.balance == value, and other.balance == value - 1."""
+    game = Game(["Collector", "Exactly_50", "Exactly_49"])
+    collector, p_50, p_49 = game.players
+
+    collector.balance = 0
+    p_50.balance = 50  # Exactly enough
+    p_49.balance = 49  
+    game._apply_card(collector, {"description": "bday", "action": "birthday", "value": 50})
+    assert p_50.balance == 0   # Paid exactly all they had
+    assert p_49.balance == 49  # Guard protected them; they paid nothing
+    assert collector.balance == 50 
+
+
+def test_auction_accepts_all_in_exact_balance_bid(monkeypatch):
+    """Branch Boundary: bid == player.balance (accepted)."""
+    game = Game(["P1", "P2"])
+    p1, p2 = game.players
+    prop = game.board.get_property_at(1)
+    
+    # P1 bids everything they have. P2 passes.
+    all_in_amount = p1.balance
+    bids = iter([all_in_amount, 0])
+    monkeypatch.setattr("moneypoly.ui.safe_int_input", lambda *_args, **_kwargs: next(bids))
+    
+    game.auction_property(prop)
+    
+    assert prop.owner == p1
+    assert p1.balance == 0
+
+def test_trade_rejects_self_trade():
+    """Trade should fail if buyer and seller are the same player."""
+    game = Game(["Solo"])
+    player = game.players[0]
+    prop = game.board.get_property_at(1)
+    prop.owner = player
+    player.add_property(prop)
+    
+    success = game.trade(player, player, prop, 100)
+    
+    assert success is False
+
+def test_find_winner_tied_net_worth():
+    """Edge Case: find_winner() when multiple players have identical net worths."""
+    game = Game(["Twin1", "Twin2"])
+    t1, t2 = game.players
+    t1.balance = 5000
+    t2.balance = 5000
+    
+    winner = game.find_winner()
+    # max() returns the first encountered item in a tie. 
+    assert winner == t1 
+
+def test_advance_turn_with_only_one_player():
+    """Edge Case: advance_turn modulo math when the player list shrinks to 1."""
+    game = Game(["Survivor", "Loser"])
+    survivor, loser = game.players
+    game.players.remove(loser) # Simulate elimination
+    
+    game.state.current_index = 0
+    game.advance_turn()
+    
+    # (0 + 1) % 1 == 0. It should seamlessly give the turn back to the survivor.
+    assert game.state.current_index == 0
+
+def test_collect_from_all_skips_exactly_broke_players():
+    """Boundary Case: Card collection against players with exactly $0."""
+    game = Game(["Collector", "Broke1", "Broke2"])
+    collector, b1, b2 = game.players
+    b1.balance = 0
+    b2.balance = 0
+    collector.balance = 0
+    
+    game._card_collect_from_others(collector, 50)
+    
+    # Collector gets nothing because the logic guards against balance < value
+    assert collector.balance == 0
+    assert b1.balance == 0
+             

@@ -10,7 +10,7 @@ from moneypoly.board import Board
 from moneypoly.dice import Dice
 from moneypoly.player import Player
 from moneypoly import ui
-
+from moneypoly.game import Game
 from test_helpers import make_property
 
 
@@ -120,3 +120,15 @@ def test_card_deck_empty_cards_remaining_and_repr():
 
     assert empty_deck.cards_remaining() == 0
     assert "CardDeck(0 cards" in repr(empty_deck)
+
+def test_move_wraparound_exact_board_size():
+    """Boundary Case: Moving exactly 40 spaces (a full board loop)."""
+    game = Game(["Flash"])
+    p1 = game.players[0]
+    p1.position = 5
+    initial_balance = p1.balance
+    
+    p1.move(40)
+    
+    assert p1.position == 5
+    assert p1.balance == initial_balance + 200 # Passes go exactly once
