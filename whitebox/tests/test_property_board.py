@@ -5,8 +5,7 @@ from moneypoly.player import Player
 
 from moneypoly.property import PropertyGroup, Property, PropertyConfig
 from test_helpers import make_property
-
-
+from moneypoly.game import Game
 def test_property_group_requires_full_ownership_for_bonus_rent():
     """A full group bonus should only apply when one player owns every property."""
     group = PropertyGroup("Brown", "brown")
@@ -118,3 +117,31 @@ def test_unmortgage_truncation_boundary():
     
     cost = prop.unmortgage()
     assert cost == 56
+
+def test_property_is_purchasable_returns_false_if_no_property_exists():
+    """Branch: is_purchasable() called on a blank tile or special tile."""
+    game = Game(["A"])
+    # Position 12 is a blank tile. Position 0 is Go.
+    assert game.board.is_purchasable(12) is False
+    assert game.board.is_purchasable(0) is False
+
+
+def test_mortgaged_property_rent_in_full_group():
+    """
+    Branch State: Player owns full group. One is mortgaged, one is active.
+    Rent on the active one must still be doubled!
+    """
+    game = Game(["Owner", "Tenant"])
+    owner, tenant = game.players
+    group = game.board.groups["dark_blue"]
+    p_mortgaged, p_active = group.properties[0], group.properties[1]
+    
+    p_mortgaged.owner = owner; owner.add_property(p_mortgaged)
+    p_active.owner = owner; owner.add_property(p_active)
+    
+    p_mortgaged.mortgage()
+    
+    # The active property must recognize the group is fully owned and charge double
+    assert p_active.get_rent() == p_active.base_rent * 2
+    # The mortgaged one must safely return 0
+    assert p_mortgaged.get_rent() == 0

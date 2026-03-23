@@ -177,3 +177,22 @@ def test_trade_completes_property_group_immediate_rent_double():
     # Rent should immediately reflect the FULL_GROUP_MULTIPLIER
     assert p1.get_rent() == p1.base_rent * 2
     assert p2.get_rent() == p2.base_rent * 2
+
+
+def test_pay_rent_to_bankrupt_owner_is_handled_safely():
+    """Edge Case: Rent payment triggered for an owner who just hit $0 but hasn't been purged yet."""
+    game = Game(["Tenant", "Zombie"])
+    tenant, zombie = game.players
+    prop = game.board.get_property_at(1)
+    
+    prop.owner = zombie
+    zombie.add_property(prop)
+    zombie.balance = 0 # Zombie is technically bankrupt
+    
+    tenant_start = tenant.balance
+    game.pay_rent(tenant, prop)
+    
+    # Tenant still pays. Zombie still collects. 
+    # (Zombie might survive bankruptcy if this happens before their turn!)
+    assert tenant.balance < tenant_start
+    assert zombie.balance > 0

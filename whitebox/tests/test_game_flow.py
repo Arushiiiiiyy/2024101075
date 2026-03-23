@@ -479,3 +479,52 @@ def test_collect_from_all_skips_exactly_broke_players():
     assert collector.balance == 0
     assert b1.balance == 0
              
+def test_card_pay_bankrupts_player_mid_turn():
+    """State Test: A 'pay' card drops player below $0. They should be purged at turn end."""
+    game = Game(["Unlucky", "Safe"])
+    p1 = game.players[0]
+    p1.balance = 50
+    p1.position = 7 # Chance tile
+    
+    # Mute prints
+    import builtins
+    original_print = builtins.print
+    builtins.print = lambda *args, **kwargs: None
+    
+    # Force a $150 penalty card
+    game.decks.chance.cards = [{"description": "Pay $150", "action": "pay", "value": 150}]
+    
+    game._move_and_resolve(p1, 0)
+    
+    assert p1.is_bankrupt() is True
+    assert p1.is_eliminated is True
+    assert p1 not in game.players
+    
+    builtins.print = original_print
+
+def test_interactive_menu_ignores_negative_mortgage_selection(monkeypatch):
+    """Branch/Input validation: User inputs a negative index in the menu."""
+    game = Game(["A"])
+    p1 = game.players[0]
+    prop = game.board.get_property_at(1)
+    prop.owner = p1; p1.add_property(prop)
+    
+    # Input -5, which is outside 0 <= idx < len()
+    monkeypatch.setattr("moneypoly.ui.safe_int_input", lambda *_args, **_kwargs: -5)
+    
+    # Should exit safely without throwing an IndexError list[-5]
+    game._menu_mortgage(p1)
+    assert prop.is_mortgaged is False
+
+def test_apply_card_ignores_malformed_card_dictionary():
+    """Edge Case: The card dictionary is missing the expected keys."""
+    game = Game(["A"])
+    p1 = game.players[0]
+    initial_balance = p1.balance
+    
+    # Apply a card with junk data
+    malformed_card = {"weird_key": "data", "action": "DOES_NOT_EXIST"}
+    game._apply_card(p1, malformed_card)
+    
+    # Game should gracefully ignore it without crashing
+    assert p1.balance == initial_balance

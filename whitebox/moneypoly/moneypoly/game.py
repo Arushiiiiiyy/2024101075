@@ -325,7 +325,8 @@ class Game:
         """Apply the effect of a drawn Chance or Community Chest card."""
         if card is None:
             return
-        print(f"  Card drawn: \"{card['description']}\"")
+        description = card.get('description', 'Unknown card')
+        print(f"  Card drawn: \"{description}\"")
         dispatch = {
             "collect":          self._card_collect,
             "pay":              self._card_pay,
