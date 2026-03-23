@@ -129,3 +129,32 @@ def test_auction_property_covers_no_bid_and_winning_bid_paths(monkeypatch):
     monkeypatch.setattr("moneypoly.ui.safe_int_input", lambda *_args, **_kwargs: next(bids))
     game.auction_property(prop)
     assert prop.owner == game.players[1]
+
+def test_trade_rejects_negative_cash_amount():
+    """A trade with a negative cash amount should be rejected safely."""
+    game = Game(["Seller", "Buyer"])
+    seller, buyer = game.players
+    prop = game.board.get_property_at(1)
+    prop.owner = seller
+    seller.add_property(prop)
+
+    original_seller_balance = seller.balance
+    original_buyer_balance = buyer.balance
+
+    assert game.trade(seller, buyer, prop, -50) is False
+    assert seller.balance == original_seller_balance
+    assert buyer.balance == original_buyer_balance
+    assert prop.owner == seller
+
+
+def test_buy_property_rejects_already_owned_property():
+    """Buying an already-owned property should fail without overwriting ownership."""
+    game = Game(["A", "B"])
+    buyer, original_owner = game.players
+    prop = game.board.get_property_at(1)
+    prop.owner = original_owner
+    original_owner.add_property(prop)
+
+    buyer.balance = 1000
+    assert game.buy_property(buyer, prop) is False
+    assert prop.owner == original_owner
